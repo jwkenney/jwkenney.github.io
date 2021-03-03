@@ -6,5 +6,6 @@ has_toc: true
 ---
 
 ## Ansible
-
 {: .no_toc}
+
+{: toc}
