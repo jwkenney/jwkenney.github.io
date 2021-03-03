@@ -4,6 +4,6 @@ has_children: true
 has_toc: true
 ---
 
-General posts here.
+## General
 
-{:toc}
+{: .no_toc}

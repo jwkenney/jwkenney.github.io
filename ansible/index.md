@@ -4,6 +4,6 @@ has_children: true
 has_toc: true
 ---
 
-Ansible posts here.
+## Ansible
 
-{:toc}
+{: .no_toc}
