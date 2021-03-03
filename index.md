@@ -5,6 +5,13 @@ has_children: true
 ---
 # Taming Penguins
 
-Where I keep random thoughts, code examples, etc.
+Mostly Linux, Tech, and DIY.
+
+Recent posts:
+<ul>
+{% for post in site.posts limit: 5 %}
+    <li><a href="{{ post.url }}">{{ post.title }}</a></li>
+{% endfor %}
+</ul>
 
 {: toc}
