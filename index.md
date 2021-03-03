@@ -6,4 +6,4 @@ has_toc: true
 
 Where I keep random thoughts, code examples, etc.
 
-Mobiles: Nav menu is upper-right.
+{:toc}

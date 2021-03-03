@@ -5,3 +5,5 @@ has_toc: true
 ---
 
 General posts here.
+
+{:toc}

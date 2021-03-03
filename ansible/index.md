@@ -5,3 +5,5 @@ has_toc: true
 ---
 
 Ansible posts here.
+
+{:toc}
