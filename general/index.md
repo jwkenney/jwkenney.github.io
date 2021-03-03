@@ -6,5 +6,5 @@ has_toc: true
 ---
 
 ## General
-
-{: .no_toc}
+{:.no_toc}
+{: toc}
