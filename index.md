@@ -1,9 +1,11 @@
 ---
-title: Home
+title: Taming Penguins
 ---
 # Home Page
 
-This is a test.
+Where I keep random thoughts, code examples, etc.
+
+Nav is on the left.
 
 ```yaml
 # This is a code example.
