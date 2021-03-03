@@ -1,7 +1,7 @@
 ---
-title: Taming Penguins
+title: Home
 ---
-# Home Page
+# Taming Penguins
 
 Where I keep random thoughts, code examples, etc.
 
