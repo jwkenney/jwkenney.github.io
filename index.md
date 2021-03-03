@@ -5,7 +5,7 @@ title: Home
 
 Where I keep random thoughts, code examples, etc.
 
-Nav is on the left.
+Mobiles: Nav menu is upper-right.
 
 ```yaml
 # This is a code example.
