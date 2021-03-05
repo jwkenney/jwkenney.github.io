@@ -1,0 +1,184 @@
+I"�S<h1 id="auditing-configuration-drift-in-a-brownfield-environment">Auditing configuration drift in a brownfield environment</h1>
+
+<p>This was inspired by a <a href="https://www.redhat.com/sysadmin/configuration-verification-ansible">RedHat post</a> on the topic, and from users on the /r/ansible/ Reddit asking for advice on how to do this.</p>
+
+<h2 id="the-problem">The Problem</h2>
+
+<p>When adopting tool like Ansible for configuration management, one big challenge is that you are often starting in a <a href="https://en.wikipedia.org/wiki/Brownfield_(software_development)">brownfield</a> environment- namely, one that is full of legacy systems and software which were deployed in an ad-hoc fashion. That means you will have a considerable amount of configuration drift to contend with.</p>
+
+<p>This can cause a lot of heartburn and uncertainty, if you plan on using Ansible to harmonize the configuration of your legacy systems. Your first push to correct configuration drift is going to result in a <em>lot</em> of changes, and it will be difficult to distinguish between the critical stuff and the noise. There is also uncertainty about the degree of changes to be made. A config tool will tell you that a file was changed… but how much did it change? Did your new template simply change a few stray lines, or did it alter the whole damned file?</p>
+
+<p>There are no perfect answers… but there are some strategies you can employ to reduce some of that uncertainty, using Ansible itself to handle the gruntwork.</p>
+
+<h2 id="the-standard-techniques-pros-and-cons">The standard techniques, pros and cons</h2>
+
+<p>Below are the techniques I see mentioned most often. Their effectiveness is all over the place.</p>
+
+<ul>
+  <li>
+    <p><strong>Running playbooks with –check and –diff</strong>: The <strong>–check</strong> argument simulates changes instead of applying them, and <strong>–diff</strong> will show you per-line config changes for any module that supports it. This sounds perfect in theory, but I find it too brittle to be useful. If your roles or playbooks perform any kind of variable or fact manipulation, or if they use <strong>register</strong> to save task results, then your test play is going to die in a hail of “variable is undefined” errors.</p>
+  </li>
+  <li>
+    <p><strong>Using ‘assert’ tasks along with changed_when / failed_when</strong>: The <a href="https://docs.ansible.com/ansible/latest/collections/ansible/builtin/assert_module.html"><strong>assert</strong></a> module lets you register a failure or change on a host, if it doesn’t meet the conditionals you specify. You could have a set of assertion tasks that register as ‘changed’ on failure, instead of actually failing- and then your playbook output would report a list of your “changes” per-host. This can be useful for comparing system facts between servers… but I don’t see it scaling well. You would need a <em>lot</em> of these assertion tasks, in order to check all of the host facts that you care about.</p>
+  </li>
+  <li>
+    <p><strong>Using ‘stat’ tasks to compare files</strong>: The <a href="https://www.redhat.com/sysadmin/configuration-verification-ansible">Ansible blog</a> has a nice example of this. First, you would use the md5sum command on your reference host to generate hashes of the files you care about. Then you would put the file paths and md5sums in a list variable, and use the stat module in a loop to compare the remote files to your reference ones. On the upside, it lets you lean on Ansible’s output to report changes. The downside is that it gives you zero context about what changed. A single extra line is all it takes to make the files appear different, making for a bad signal-to-noise ratio on teasing out differences.</p>
+  </li>
+  <li>
+    <p><strong>Using the ‘backup’ param for any template or copy tasks</strong>: This is more of a damage mitigation strategy, if you have roles that push out new files or configs. If your new config borks the target system, you can quickly copy the old one back in-place from a timestamped backup.</p>
+  </li>
+  <li>
+    <p><strong>Using the ansible.utils.fact_diff module to compare facts between hosts:</strong> The <a href="https://docs.ansible.com/ansible/latest/collections/ansible/utils/fact_diff_module.html">fact_diff</a> module is an interesting one- it allows you to compare any two facts or variables, and get a hash or diff-style output of differences between the two. This can be especially useful in combination with modules like <a href="https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_facts_module.html">package_facts</a>, allowing you to get nice parse-able output of differences between hosts.</p>
+  </li>
+  <li>
+    <p><strong>Using Ansible Callback Plugins to make output more readable:</strong> The default callback plugin gives output that is suitable for engineers, but it would be nonsensical to a manager or change approval board. It is worth trying out different callback plugins, that have more concise and readable output. Some useful ones I am a fan of:</p>
+
+    <ul>
+      <li><strong>unixy:</strong> This one is probably the cleanest of the bunch, and the least confusing for public consumption. You get the title of each task, and a simple list of the hosts and whether they were ‘ok’ or ‘changed’.</li>
+      <li><strong>dense</strong>: Probably the most terse of the options. Annoying that it refers to tasks by number though.</li>
+      <li><strong>tree</strong>: This one is interesting- it saves play output in JSON files, one file per host. I could see some possibilities for custom reporting, i.e. pulling the information into a prettier HTML report via a Jinja template.</li>
+      <li>On the Ansible host, get a list of callback plugins available to use for output:<br />
+<code class="language-plaintext highlighter-rouge">ansible-doc -t callback -l</code></li>
+      <li>Temporarily override the output plugin when running your playbook:<br />
+<code class="language-plaintext highlighter-rouge">ANSIBLE_STDOUT_CALLBACK=dense ansible-playbook -i host1,host2 my_playbook.yml -e "var1=value var2=value"</code></li>
+    </ul>
+  </li>
+</ul>
+
+<p>As you can see, there is no easy-bake way to get a bird’s eye view of config drift- but we can make our own audit playbook without too much fuss.</p>
+
+<h2 id="step-1-create-or-identify-a-reference-build">Step 1: Create or identify a reference build</h2>
+
+<p>Either build a new host from scratch exactly the way you expect it to be, or identify a host which you think is the closest to a “reference” build. This will be the host that you compare the others against.</p>
+
+<h2 id="step-2-use-an-ansible-playbook-to-gather-relevant-configs-across-your-hosts">Step 2: Use an Ansible playbook to gather relevant configs across your hosts</h2>
+
+<p>Come up with a list of the configuration files you want to compare across your hosts. You can use the <a href="https://docs.ansible.com/ansible/latest/collections/ansible/builtin/fetch_module.html">fetch</a> module along with loop, to fetch the files you care about and stash them on the Ansible server. The fetch module automatically saves files in sub-folders by host and file path. This makes it easy to compare the config files of two hosts, using a simple <strong>diff -r</strong> command on the Ansible server.</p>
+
+<p>Below is specific to Cent/Redhat, but it gives an idea of the overall pattern.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+
+<span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Play 1 - Gather facts across hosts and compare to reference host</span>
+<span class="na">hosts</span><span class="pi">:</span> <span class="s">all</span>
+<span class="na">gather_facts</span><span class="pi">:</span> <span class="s">yes</span>
+
+<span class="na">vars_prompt</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">refhost</span>
+    <span class="na">prompt</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Please</span><span class="nv"> </span><span class="s">type</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">hostname</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">your</span><span class="nv"> </span><span class="s">reference</span><span class="nv"> </span><span class="s">host,</span><span class="nv"> </span><span class="s">as</span><span class="nv"> </span><span class="s">seen</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">inventory"</span>
+    <span class="na">private</span><span class="pi">:</span> <span class="s">no</span>
+
+<span class="na">vars</span><span class="pi">:</span>
+  <span class="c1"># List the full paths of the config files that we want to compare</span>
+  <span class="na">my_configs</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">/etc/hosts</span>
+    <span class="pi">-</span> <span class="s">/etc/ssh/sshd_config</span>
+
+<span class="na">pre_tasks</span><span class="pi">:</span>
+
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Make staging folders on Ansible server</span>
+    <span class="na">delegate_to</span><span class="pi">:</span> <span class="s">localhost</span>
+    <span class="na">run_once</span><span class="pi">:</span> <span class="s">yes</span>
+    <span class="na">file</span><span class="pi">:</span>
+      <span class="na">state</span><span class="pi">:</span> <span class="s">directory</span>
+      <span class="na">path</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">playbook_dir</span><span class="nv"> </span><span class="s">}}/{{</span><span class="nv"> </span><span class="s">item</span><span class="nv"> </span><span class="s">}}"</span>
+    <span class="na">loop</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">host_configs</span>
+      <span class="pi">-</span> <span class="s">diff_files</span>
+      <span class="pi">-</span> <span class="s">diff_reports</span>
+
+<span class="na">tasks</span><span class="pi">:</span>
+
+  <span class="c1"># Destination is relative to the folder the playbook is sitting in.</span>
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Fetch configs of interest across the environment, including the reference host</span>
+    <span class="na">fetch</span><span class="pi">:</span>
+      <span class="na">src</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">item</span><span class="nv"> </span><span class="s">}}"</span>
+      <span class="na">dest</span><span class="pi">:</span> <span class="s">host_configs</span>
+    <span class="na">loop</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">my_configs</span><span class="nv"> </span><span class="s">}}"</span>
+
+  <span class="c1"># You could be fancy and use the 'package_facts' module,</span>
+  <span class="c1"># but command output is fine for quick and dirty diffs.</span>
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Fetch RPM package detailed info</span>
+    <span class="na">shell</span><span class="pi">:</span>
+      <span class="na">cmd</span><span class="pi">:</span> <span class="s">rpm -qa | sort</span>
+    <span class="na">register</span><span class="pi">:</span> <span class="s">package_result</span>
+
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Save package info as server fact</span>
+    <span class="na">set_fact</span><span class="pi">:</span>
+      <span class="na">packagelist</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">package_result.stdout_lines</span><span class="nv"> </span><span class="s">}}"</span>
+
+  <span class="c1"># Diff command gives a nonzero return code, so we account for that with changed_when</span>
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">On Ansible server, recursively diff the files of each host against the reference host's</span>
+    <span class="na">delegate_to</span><span class="pi">:</span> <span class="s">localhost</span>
+    <span class="na">shell</span><span class="pi">:</span>
+      <span class="na">cmd</span><span class="pi">:</span> <span class="s2">"</span><span class="s">diff</span><span class="nv"> </span><span class="s">-r</span><span class="nv"> </span><span class="s">-y</span><span class="nv"> </span><span class="s">--suppress-common-lines</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">playbook_dir</span><span class="nv"> </span><span class="s">}}/host_configs/{{</span><span class="nv"> </span><span class="s">refhost</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">playbook_dir</span><span class="nv"> </span><span class="s">}}/host_configs/{{</span><span class="nv"> </span><span class="s">inventory_hostname</span><span class="nv"> </span><span class="s">}}"</span>
+    <span class="na">register</span><span class="pi">:</span> <span class="s">diff_result</span>
+    <span class="na">changed_when</span><span class="pi">:</span> <span class="s">diff_result.rc == </span><span class="m">1</span>
+    <span class="na">failed_when</span><span class="pi">:</span> <span class="s">diff_result.rc &gt; </span><span class="m">1</span>
+
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Generate diff reports on Ansible server</span>
+    <span class="na">delegate_to</span><span class="pi">:</span> <span class="s">localhost</span>
+    <span class="na">template</span><span class="pi">:</span>
+      <span class="na">src</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">playbook_dir</span><span class="nv"> </span><span class="s">}}/diff_report.j2"</span>
+      <span class="na">dest</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">playbook_dir</span><span class="nv"> </span><span class="s">}}/diff_reports/report_{{inventory_hostname}}.txt"</span>
+
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Print a diff summary</span>
+    <span class="na">debug</span><span class="pi">:</span>
+      <span class="na">msg</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Host</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">refhost</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">-&gt;</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">inventory_hostname</span><span class="nv"> </span><span class="s">}},</span><span class="nv"> </span><span class="s">Config</span><span class="nv"> </span><span class="s">diffs</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">diff_result.stdout_lines</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">length</span><span class="nv"> </span><span class="s">}},</span><span class="nv"> </span><span class="s">Package</span><span class="nv"> </span><span class="s">diffs</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">hostvars[refhost]['packagelist']</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">symmetric_difference(packagelist)</span><span class="nv"> </span><span class="s">|</span><span class="nv"> </span><span class="s">length</span><span class="nv"> </span><span class="s">}}"</span>
+
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Wrapping up</span>
+    <span class="na">pause</span><span class="pi">:</span>
+      <span class="na">prompt</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Diff</span><span class="nv"> </span><span class="s">reports</span><span class="nv"> </span><span class="s">are</span><span class="nv"> </span><span class="s">under</span><span class="nv"> </span><span class="s">{{</span><span class="nv"> </span><span class="s">playbook_dir</span><span class="nv"> </span><span class="s">}}/diff_reports/.</span><span class="nv"> </span><span class="s">Press</span><span class="nv"> </span><span class="s">Enter</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">finish</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">playbook"</span>
+</code></pre></div></div>
+
+<p>The above playbook comes with a companion template called <strong>diff_report.j2</strong> , stored next to the playbook. Below is the template:</p>
+
+<div class="language-jinja highlighter-rouge"><div class="highlight"><pre class="highlight"><code>This host: <span class="cp">{{</span> <span class="nv">inventory_hostname</span> <span class="cp">}}</span>
+Reference host: <span class="cp">{{</span> <span class="nv">refhost</span> <span class="cp">}}</span>
+
+Diff score is a count of the output lines of each diff command,
+giving you a rough estimate of the amount of "drift" between hosts.
+
+Configuration diff score: <span class="cp">{{</span> <span class="nv">diff_result.stdout_lines</span> <span class="o">| </span><span class="nf">length</span> <span class="cp">}}</span>
+Package diff score: <span class="cp">{{</span> <span class="nv">hostvars</span><span class="p">[</span><span class="nv">refhost</span><span class="p">][</span><span class="s1">'packagelist'</span><span class="p">]</span> <span class="o">| </span><span class="nf">symmetric_difference</span><span class="p">(</span><span class="nv">packagelist</span><span class="p">)</span> <span class="o">| </span><span class="nf">length</span> <span class="cp">}}</span>
+
+All configuration differences:
+<span class="cp">{{</span> <span class="nv">diff_result.stdout_lines</span> <span class="o">| </span><span class="nf">to_nice_yaml</span> <span class="cp">}}</span>
+
+Packages on <span class="cp">{{</span> <span class="nv">refhost</span> <span class="cp">}}</span> and <span class="cp">{{</span> <span class="nv">inventory_hostname</span> <span class="cp">}}</span> that differ
+<span class="cp">{{</span> <span class="nv">hostvars</span><span class="p">[</span><span class="nv">refhost</span><span class="p">][</span><span class="s1">'packagelist'</span><span class="p">]</span> <span class="o">| </span><span class="nf">symmetric_difference</span><span class="p">(</span><span class="nv">packagelist</span><span class="p">)</span> <span class="o">| </span><span class="nf">to_nice_yaml</span> <span class="cp">}}</span>
+</code></pre></div></div>
+
+<p>The result is a set of report files generated per-host, which contain the differences between that host and your reference or “baseline” host.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># diff_reports/report_host1.txt
+This host: host1
+Reference host: host2
+
+Diff score is a count of the output lines of each diff command,
+giving you a rough estimate of the amount of "drift" between hosts.
+
+Config Diff Score: 7
+Package Diff Score: 3
+
+All configuration differences:
+- diff -r -y --suppress-common-lines host1/etc/hosts host2/etc/hosts
+-                                                               &gt;
+-                                                               &gt; 1.2.3.4     customhost
+- diff -r -y --suppress-common-lines host1/etc/ssh/sshd_config host2/etc/ssh/sshd_config
+- #LoginGraceTime 2m                                            | LoginGraceTime 2m
+- #MaxAuthTries 6                                               | MaxAuthTries 6
+- 'Only in /etc/ansible/playbooks/host_configs/host2: custom.conf'
+
+Packages on host2 and host1 that differ:
+- diffutils-3.6-6.el8.x86_64
+- grep-3.1-6.el8.x86_64
+- nano-2.9.8-1.el8.x86_64
+</code></pre></div></div>
+
+<h2 id="step-3-develop-your-ansible-roles-and-playbooks-with-the-present-drift-in-mind">Step 3: Develop your Ansible roles and playbooks with the present drift in mind</h2>
+
+<p>With a better idea of where the configuration drift is in your environment, you will have better insight intohow you should design your roles and playbooks. Can you push the same exact config file everywhere, or does it need to be a template with a few custom per-host items? Are there any “snowflake” builds that require special accommodations?</p>
+
+<p>Generally, you don’t want to add complexity to your roles until a situation requires it… but searching for those situations ahead of time, can save you a lot of grief and surprise refactoring work during your initial configuration rollout.</p>
+:ET

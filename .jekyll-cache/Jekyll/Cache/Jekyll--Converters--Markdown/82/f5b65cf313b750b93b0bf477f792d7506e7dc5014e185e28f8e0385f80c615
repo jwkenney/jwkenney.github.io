@@ -1,0 +1,169 @@
+I"�1<h1 id="dirty-ansible-creative-abuse-of-vars_prompt-for-user-friendly-playbooks">Dirty Ansible: Creative abuse of vars_prompt for user-friendly playbooks</h1>
+
+<p>This is part of a (maybe ongoing) series of dirty tips and tricks with Ansible. Is this stuff sanctioned, best-practice or (gasp) an anti-pattern? Considering how gnarly Ansible’s trifecta of Jinja/YAML/Python can be, I’m going to answer <em><a href="https://en.wikipedia.org/wiki/Mu_%28negative%29#%22Unasking%22_the_question">Mu</a></em> to that question. In the meantime, we have deliverables to make!</p>
+
+<h2 id="ansibles-cli-wizard-vars_prompt">Ansible’s CLI wizard: vars_prompt</h2>
+
+<p>If you use Tower/AWX and you want your non-techie users to pass arguments into your playbooks, then <a href="https://docs.ansible.com/ansible-tower/latest/html/userguide/job_templates.html#surveys">Surveys</a> are the go-to option. For the rest of us plebs using command-line Ansible, we have <a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks_prompts.html">vars_prompt</a> to lean on. Simply put, <strong>vars_prompt</strong> gives you interactive “wizard-style” playbooks, by asking the user to fill in certain values when the playbook begins. Otherwise, a prompt variable behaves the same as any other that you would find in the  <strong>vars:</strong> section of a playbook.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="pi">-</span> <span class="na">hosts</span><span class="pi">:</span> <span class="s">localhost</span>
+  <span class="na">connection</span><span class="pi">:</span> <span class="s">local</span>
+
+  <span class="na">vars_prompt</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">user</span>
+      <span class="na">prompt</span><span class="pi">:</span> <span class="s">Gimme a username, or Enter for default</span>
+      <span class="na">private</span><span class="pi">:</span> <span class="s">no</span>
+      <span class="na">default</span><span class="pi">:</span> <span class="s">derpy</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">pass</span>
+      <span class="na">prompt</span><span class="pi">:</span> <span class="s">Gimme a password, we won't show it on console. We promise!</span>
+      <span class="na">private</span><span class="pi">:</span> <span class="s">yes</span>
+
+  <span class="na">tasks</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Print the variables that user provided</span>
+      <span class="na">debug</span><span class="pi">:</span>
+        <span class="na">msg</span><span class="pi">:</span> <span class="s2">"</span><span class="s">User</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">,</span><span class="nv"> </span><span class="s">password</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">.</span><span class="nv"> </span><span class="s">Oops..."</span>
+</code></pre></div></div>
+
+<p>Above is the boring, “hello world” use-case for <strong>vars_prompt</strong>. But we can go deeper, and indeed we must- because Pat from Accounting just switched to a Developer role, and they are already requesting SSH access to our Ansible server. They also just asked us “What is a Linux?” <em>Fun</em>.</p>
+
+<p>There are some quirks and nuances to <strong>vars_prompt</strong>, which are not well-documented:</p>
+
+<ol>
+  <li>You CANNOT use variables from <strong>host_vars/</strong> or <strong>group_vars/</strong> in a prompt entry, because those don’t get pulled in until later in the play. However….</li>
+  <li>You CAN use <a href="https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html">Special</a> variables in your prompt dialogs, as well as any variables defined locally in the <strong>vars:</strong> section of your playbook.</li>
+  <li>You CAN use a prompt variable in other top-level areas of the playbook, such as the <strong>hosts:</strong> directive. We will be abusing this in a minute.</li>
+  <li>If you set a prompt variable at runtime using <strong>–extra-vars</strong>, the playbook won’t bother prompting you for input. If you like your automation, you can keep your automation!</li>
+  <li>For lengthy prompts that explain a lot of stuff to the user, you can do one of two things: either quote the prompt as one long string and use <strong>\n</strong> sequences for line breaks, or else carefully use the pipe symbol to break the dialog into multiple lines per the YAML spec. You can do one or the other, but not both.</li>
+</ol>
+
+<p>Keep quirks #2 and #3 in mind, as we are going to exploit them in some useful ways.</p>
+
+<h2 id="you-want-to-run-this-where-prompt-the-user-for-hosts-to-run-against">You want to run this <em>where?</em> Prompt the user for hosts to run against</h2>
+
+<p>Every new Ansible user has had at least one minor heart attack from running a playbook with <strong>hosts: all</strong> against the wrong hosts. It’s an easy mistake to make, especially with command-line Ansible… so let’s use quirks #2 and #3 to set up some guardrails.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">---</span>
+<span class="c1"># Wait... we could do this all along?</span>
+
+<span class="pi">-</span> <span class="na">hosts</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">target</span><span class="nv"> </span><span class="s">}}"</span>
+
+  <span class="na">vars_prompt</span><span class="pi">:</span>
+
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">target</span>
+      <span class="na">prompt</span><span class="pi">:</span> <span class="pi">|</span>
+        <span class="s">Welcome to the server extermination playbook.</span>
+        <span class="s">Here are the hosts available to exterminate:</span>
+        <span class="s">{{ groups | dict2items | json_query('[?key!=`all` &amp;&amp; key!=`ungrouped`]') | items2dict | to_nice_yaml }}</span>
+        <span class="s">Please provide host(s) or group(s) to exterminate comma-separated,</span>
+        <span class="s">or hit Enter for default</span>
+      <span class="na">private</span><span class="pi">:</span> <span class="s">no</span>
+      <span class="na">default</span><span class="pi">:</span> <span class="s">dev</span>
+
+  <span class="na">tasks</span><span class="pi">:</span>
+
+  <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Dear god what have you just done</span>
+    <span class="na">debug</span><span class="pi">:</span>
+      <span class="na">msg</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Time</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">nuke</span><span class="nv"> </span><span class="s">some</span><span class="nv"> </span><span class="s">servers</span><span class="nv"> </span><span class="s">LET'S</span><span class="nv"> </span><span class="s">GOOOOOOO!"</span>
+</code></pre></div></div>
+
+<p>What sorcery is this?</p>
+
+<ul>
+  <li>The <strong>vars:</strong> and <strong>vars_prompt:</strong> sections are evaluated before <strong>hosts:</strong>, allowing you to prompt the user for which hosts to run against. The usual <a href="https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html">patterns</a> for targeting hosts and groups still apply.</li>
+  <li>We reference a <a href="https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html">special variable</a> called <strong>groups</strong>, which is a dictionary of all of the groups and hosts in your provided inventory. Note that the groups hash always contains two <a href="https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups">default groups</a> inside, called ‘all’ and ‘ungrouped’. We filter them out with a <strong>json_query</strong> statement, leaving us with a clean list of our defined groups and their hosts. If your inventory file has no groups or you just want a list of hosts, use `` instead.</li>
+  <li>If the <strong>json_query</strong> filter scares you, you can also use a combo of: <code class="language-plaintext highlighter-rouge">dict2items | rejectattr | items | items2dict</code> to filter the groups hash. I’ll let you decide which is prettier.</li>
+</ul>
+
+<p>The result is a helpful print-out of the hosts available to run the play against:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[root@rhel8 playbooks]# ansible-playbook -i hosts host_wiper.yml
+
+Welcome to the server extermination playbook.
+Here are the hosts available to exterminate:
+dev:
+- host1
+- host2
+prod:
+- host5
+- host6
+test:
+- host3
+- host4
+
+Please provide host(s) or group(s) to exterminate comma-separated,
+or hit Enter for default [dev]: prod
+
+PLAY [localhost] ***************************************************************************
+
+TASK [Gathering Facts] *********************************************************************
+ok: [localhost]
+
+TASK [Dear god what have you just done] ****************************************************
+ok: [localhost] =&gt; {}
+
+MSG:
+
+Time to nuke some servers LET'S GOOOOOOO!
+...
+</code></pre></div></div>
+
+<h3 id="bonus-set-up-bash-aliases-and-profiles-for-easy-playbook-execution">Bonus: Set up bash aliases and profiles for easy playbook execution</h3>
+
+<p>Maybe our new developer Pat isn’t so good at this command-line stuff, and their question of “How do I Linux?” has you worried. Let’s create a path of least resistance, so that all they need to do is type a simple word to kick off their playbook. We can do this with an old-fashioned combination of sudoers, bash aliases, and bash profiles.</p>
+
+<ol>
+  <li>In our <strong>/etc/sudoers</strong> file, we add an entry to let Pat run our playbook with sudo permissions- but only against a specific set of hosts. No, we aren’t letting Pat run <em>anything</em> with Ansible as root. We’re dirty here, but we aren’t <em>insane</em>.
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[root@rhel8 ~]# cat /etc/sudoers
+pat localhost=/usr/bin/ansible -i /etc/ansible/inventory/pat_hosts /etc/ansible/playbooks/host_wiper.yml
+</code></pre></div>    </div>
+  </li>
+  <li>In Pat’s home folder, we create a bash alias for the exact same command in her <strong>.bash_profile</strong> or <strong>.bashrc</strong>, while also leaving a helpful note for how to invoke it:</li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[root@rhel8 ~]# cat /home/pat/.bash_profile
+
+alias dothething="sudo /usr/bin/ansible -i /etc/ansible/inventory/pat_hosts /etc/ansible/playbooks/host_wiper.yml"
+
+# Give Pat some guidance on how to Do the Thing!
+echo -e "\nWelcome, Pat!"
+echo -e "As requested, we have created a playbook that lets you wipe your own servers."
+echo -e "To start it off, just type the below word:"
+echo -e "dothething"
+echo -e "Don't do anything we wouldn't do! Call us if you have any questions.\n"
+</code></pre></div></div>
+
+<ol>
+  <li>Now when Pat logs in with Putty, they can follow the happy path to running their “maintenance” playbook. You can verify the alias is present, by logging in / switching to their user and typing the <strong>alias</strong> command.</li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[root@rhel8 ~]# su - pat
+
+Welcome, Pat!
+As requested, we have created an Ansible playbook that lets you wipe your own servers.
+To start it off, just type the below word:
+  dothething
+Don't do anything we wouldn't do! Call us if you have any questions.
+
+[pat@rhel8 ~]# alias -p | grep dothething
+alias dothething='sudo /usr/bin/ansible -i /etc/ansible/inventory/pat_hosts /etc/ansible/playbooks/host_wiper.yml'
+
+[pat@rhel8 ~]# dothethingPlease provide a password:
+
+Welcome to the server extermination playbook.
+Here are the hosts available to exterminate:
+dev:
+- host1
+- host2
+prod:
+- host5
+- host6
+test:
+- host3
+- host4
+Please provide host(s) or group(s) to exterminate comma-separated,
+or hit Enter for default [dev]: host1,host2,prod
+</code></pre></div></div>
+
+<p>I think that’s enough damage for now. While getting your hands dirty, try to keep your nose clean!</p>
+:ET
