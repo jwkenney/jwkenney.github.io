@@ -12,28 +12,28 @@ kramdown:
     block:
       line_numbers: false
 
-collections:
-  Ansible:
-    permalink: "/:collection/:path/"
-    output: true
-  General:
-    permalink: "/:collection/:path/"
-    output: true
-  DIY:
-    permalink: "/:collection/:path/"
-    output: true
+# collections:
+#   Ansible:
+#     permalink: "/:collection/:path/"
+#     output: true
+#   General:
+#     permalink: "/:collection/:path/"
+#     output: true
+#   DIY:
+#     permalink: "/:collection/:path/"
+#     output: true
 
-just_the_docs:
-  collections:
-    Ansible:
-      name: Ansible
-      nav_exclude: false
-      search_exclude: false
-    General:
-      name: General
-      nav_exclude: false
-      search_exclude: false
-    DIY:
-      name: DIY
-      nav_exclude: false
-      search_exclude: false
+# just_the_docs:
+#   collections:
+#     Ansible:
+#       name: Ansible
+#       nav_exclude: false
+#       search_exclude: false
+#     General:
+#       name: General
+#       nav_exclude: false
+#       search_exclude: false
+#     DIY:
+#       name: DIY
+#       nav_exclude: false
+#       search_exclude: false
