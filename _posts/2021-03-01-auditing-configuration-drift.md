@@ -2,6 +2,7 @@
 title: Auditing configuration drift
 parent: Ansible
 grand_parent: Home
+tags: ansible
 date: 2021-03-01
 ---
 

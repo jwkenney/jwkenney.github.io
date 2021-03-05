@@ -1,7 +1,8 @@
 ---
 title: Cable Management for Home Wiring
-parent: Tech
+parent: DIY
 grand_parent: Home
+tags: diy
 date: 2015-08-03
 ---
 
