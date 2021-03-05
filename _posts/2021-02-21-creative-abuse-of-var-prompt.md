@@ -2,7 +2,7 @@
 title: Creative abuse of vars_prompt
 parent: Ansible
 grand_parent: Home
-tags: ansible
+tags: Ansible
 date: 2021-02-21
 ---
 

@@ -1,6 +1,8 @@
-remote_theme: pmarsceill/just-the-docs
-search_enabled: true
-color_scheme: dark
+remote_theme:  mmistakes/minimal-mistakes 
+#remote_theme: pmarsceill/just-the-docs
+minimal_mistakes_skin: "neon"
+title: "Taming Penguins"
+description: "Tech, Linux, DIY"
 
 # Syntax highlighting engine
 highlighter: rouge
@@ -11,29 +13,3 @@ kramdown:
   syntax_highlighter_opts:
     block:
       line_numbers: false
-
-# collections:
-#   Ansible:
-#     permalink: "/:collection/:path/"
-#     output: true
-#   General:
-#     permalink: "/:collection/:path/"
-#     output: true
-#   DIY:
-#     permalink: "/:collection/:path/"
-#     output: true
-
-# just_the_docs:
-#   collections:
-#     Ansible:
-#       name: Ansible
-#       nav_exclude: false
-#       search_exclude: false
-#     General:
-#       name: General
-#       nav_exclude: false
-#       search_exclude: false
-#     DIY:
-#       name: DIY
-#       nav_exclude: false
-#       search_exclude: false
