@@ -1,20 +1,21 @@
 ---
 title: Cable Management for Home Wiring
-parent: DIY
-grand_parent: Home
-tags: DIY
 date: 2015-08-03
+categories:
+  - DIY
+tags:
+  - Home Improvement
 ---
 
 # Cable Management for Home Wiring
 
 After moving into our new house, I found myself in serious need of a wired LAN to handle the gadgets in our living room. I could no longer get away with running cable under the rugs and furniture, and my attempt to go all-wireless turned everything into a Powerpoint presentation. Time to hit the crawlspace and lay down some wire!
 
-I only needed ethernet between two rooms, but I wanted to run them in a way that I could expand on later. Bonus points if it is easy to install in a cramped crawlspace.  
+I only needed ethernet between two rooms, but I wanted to run them in a way that I could expand on later. Bonus points if it is easy to install in a cramped crawlspace.
 
 The solution:
 
-[crawl_gutter.jpg](/media/crawl_gutter.JPG)
+![crawl_gutter.jpg](/assets/images/2015-08-03-crawl_gutter.JPG)
 
 Vinyl rain gutters!
 

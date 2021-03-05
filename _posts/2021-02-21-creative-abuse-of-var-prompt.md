@@ -1,12 +1,11 @@
 ---
-title: Creative abuse of vars_prompt
-parent: Ansible
-grand_parent: Home
-tags: Ansible
+title: Creative abuse of vars_prompt, for user-friendly playbooks without Tower
 date: 2021-02-21
+categories:
+  - Ansible
+tags:
+  - Dirty Tricks
 ---
-
-# Dirty Ansible: Creative abuse of vars_prompt for user-friendly playbooks
 
 This is part of a (maybe ongoing) series of dirty tips and tricks with Ansible. Is this stuff sanctioned, best-practice or (gasp) an anti-pattern? Considering how gnarly Ansible's trifecta of Jinja/YAML/Python can be, I'm going to answer *[Mu](https://en.wikipedia.org/wiki/Mu_%28negative%29#%22Unasking%22_the_question)* to that question. In the meantime, we have deliverables to make!
 
@@ -14,6 +13,7 @@ This is part of a (maybe ongoing) series of dirty tips and tricks with Ansible. 
 
 If you use Tower/AWX and you want your non-techie users to pass arguments into your playbooks, then [Surveys](https://docs.ansible.com/ansible-tower/latest/html/userguide/job_templates.html#surveys) are the go-to option. For the rest of us plebs using command-line Ansible, we have [vars_prompt](https://docs.ansible.com/ansible/latest/user_guide/playbooks_prompts.html) to lean on. Simply put, **vars_prompt** gives you interactive "wizard-style" playbooks, by asking the user to fill in certain values when the playbook begins. Otherwise, a prompt variable behaves the same as any other that you would find in the  **vars:** section of a playbook.
 
+{% raw %}
 ```yaml
 ---
 - hosts: localhost
@@ -33,6 +33,7 @@ If you use Tower/AWX and you want your non-techie users to pass arguments into y
       debug:
         msg: "User is {{ user }}, password is {{ pass }}. Oops..."
 ```
+{% endraw %}
 
 Above is the boring, "hello world" use-case for **vars_prompt**. But we can go deeper, and indeed we must- because Pat from Accounting just switched to a Developer role, and they are already requesting SSH access to our Ansible server. They also just asked us "What is a Linux?" _Fun_.
 
@@ -48,7 +49,7 @@ Keep quirks #2 and #3 in mind, as we are going to exploit them in some useful wa
 
 ## You want to run this _where?_ Prompt the user for hosts to run against
 
-Every new Ansible user has had at least one minor heart attack from running a playbook with **hosts: all** against the wrong hosts. It's an easy mistake to make, especially with command-line Ansible... so let's use quirks #2 and #3 to set up some guardrails.
+Every new Ansible user has had at least one bad experience with **hosts: all**- namely, running it against the wrong set of hosts. It's an easy mistake to make, especially with command-line Ansible. Let's use quirks #2 and #3 to set up some guardrails.
 {%raw%}
 ```yaml
 ---
@@ -57,7 +58,6 @@ Every new Ansible user has had at least one minor heart attack from running a pl
 - hosts: "{{ target }}"
 
   vars_prompt:
-
     - name: target
       prompt: |
         Welcome to the server extermination playbook.
@@ -76,14 +76,14 @@ Every new Ansible user has had at least one minor heart attack from running a pl
 ```
 {%endraw%}
 
-What sorcery is this?
+*What sorcery is this?*
 
 *  The **vars:** and **vars_prompt:** sections are evaluated before **hosts:**, allowing you to prompt the user for which hosts to run against. The usual [patterns](https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html) for targeting hosts and groups still apply.  
-*  We reference a [special variable](https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html) called **groups**, which is a dictionary of all of the groups and hosts in your provided inventory. Note that the groups hash always contains two [default groups](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups) inside, called 'all' and 'ungrouped'. We filter them out with a **json_query** statement, leaving us with a clean list of our defined groups and their hosts. If your inventory file has no groups or you just want a list of hosts, use `{{ groups['all'] }}` instead.  
-*  If the **json_query** filter scares you, you can also use a combo of: `dict2items | rejectattr | items | items2dict` to filter the groups hash. I'll let you decide which is prettier.
+*  We reference a [special variable](https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html) called **groups**, which is a dictionary of all of the groups and hosts in your provided inventory. Note that the groups hash always contains two [default groups](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups) inside, called 'all' and 'ungrouped'. We filter them out with a **json_query** statement, leaving us with a clean list of our defined groups and their hosts. If your inventory file has no groups or you just want a list of hosts, use {% raw %}`{{ groups['all'] }}`{% endraw %} instead.  
+*  If the **json_query** filter scares you, you can also use a combo of: {% raw %}`dict2items | rejectattr | items | items2dict`{% endraw %} to filter the groups hash. I'll let you decide which is prettier.
 
 The result is a helpful print-out of the hosts available to run the play against:
-
+{% raw %}
 ```
 [root@rhel8 playbooks]# ansible-playbook -i hosts host_wiper.yml
 
@@ -115,16 +115,19 @@ MSG:
 Time to nuke some servers LET'S GOOOOOOO!
 ...
 ```
+{% endraw %}
 
 ###  Bonus: Set up bash aliases and profiles for easy playbook execution
 
 Maybe our new developer Pat isn't so good at this command-line stuff, and their question of "How do I Linux?" has you worried. Let's create a path of least resistance, so that all they need to do is type a simple word to kick off their playbook. We can do this with an old-fashioned combination of sudoers, bash aliases, and bash profiles.
 
 1. In our **/etc/sudoers** file, we add an entry to let Pat run our playbook with sudo permissions- but only against a specific set of hosts. No, we aren't letting Pat run _anything_ with Ansible as root. We're dirty here, but we aren't _insane_.  
+{% raw %}
 ```
 [root@rhel8 ~]# cat /etc/sudoers
 pat localhost=/usr/bin/ansible -i /etc/ansible/inventory/pat_hosts /etc/ansible/playbooks/host_wiper.yml
 ```
+{% endraw %}
 2. In Pat's home folder, we create a bash alias for the exact same command in her **.bash_profile** or **.bashrc**, while also leaving a helpful note for how to invoke it:  
 {%raw%}
 ```

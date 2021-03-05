@@ -1,12 +1,9 @@
 ---
-title: Auditing configuration drift
-parent: Ansible
-grand_parent: Home
-tags: Ansible
+title: Using Ansible to audit configuration drift in a brownfield environment
 date: 2021-03-01
+categories:
+  - Ansible
 ---
-
-# Auditing configuration drift in a brownfield environment
 
 This was inspired by a [RedHat post](https://www.redhat.com/sysadmin/configuration-verification-ansible) on the topic, and from users on the /r/ansible/ Reddit asking for advice on how to do this.
 
@@ -148,9 +145,11 @@ All configuration differences:
 Packages on {{ refhost }} and {{ inventory_hostname }} that differ
 {{ hostvars[refhost]['packagelist'] | symmetric_difference(packagelist) | to_nice_yaml }}
 ```
+{%endraw%}
 
 The result is a set of report files generated per-host, which contain the differences between that host and your reference or "baseline" host.
 
+{%raw%}
 ```
 # diff_reports/report_host1.txt
 This host: host1
@@ -180,6 +179,6 @@ Packages on host2 and host1 that differ:
 
 ## Step 3: Develop your Ansible roles and playbooks with the present drift in mind
 
-With a better idea of where the configuration drift is in your environment, you will have better insight intohow you should design your roles and playbooks. Can you push the same exact config file everywhere, or does it need to be a template with a few custom per-host items? Are there any "snowflake" builds that require special accommodations?
+With a better idea of where the configuration drift is in your environment, you will have better insight into how you should design your roles and playbooks. Can you push the same exact config file everywhere, or does it need to be a template with a few custom per-host items? Are there any "snowflake" builds that require special accommodations?
 
 Generally, you don't want to add complexity to your roles until a situation requires it... but searching for those situations ahead of time, can save you a lot of grief and surprise refactoring work during your initial configuration rollout.
