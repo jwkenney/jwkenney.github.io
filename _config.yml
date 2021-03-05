@@ -11,3 +11,29 @@ kramdown:
   syntax_highlighter_opts:
     block:
       line_numbers: false
+
+collections:
+  ansible:
+    permalink: "/:collection/:path/"
+    output: true
+  general:
+    permalink: "/:collection/:path/"
+    output: true
+  diy:
+    permalink: "/:collection/:path/"
+    output: true
+
+just_the_docs:
+  collections:
+    ansible:
+      name: Ansible
+      nav_exclude: false
+      search_exclude: false
+    general:
+      name: General
+      nav_exclude: false
+      search_exclude: false
+    diy:
+      name: DIY
+      nav_exclude: false
+      search_exclude: false

@@ -1,11 +1,11 @@
 ---
-title: Tech
+title: DIY
 parent: Home
 has_children: true
 has_toc: true
 ---
 
-# Tech stuff
+## DIY
 {: .no_toc}
 
 {: toc}

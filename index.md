@@ -7,9 +7,20 @@ has_children: true
 
 Mostly Linux, Tech, and DIY.
 
-Recent posts:
+Latest posts via collections:
 <ul>
-{% for post in site.posts limit: 5 %}
+{% for collection in site.collections %}
+    {% if collection.label != 'posts' %}
+        {% for item in site[collection.label] limit: 1 %}
+            <li><strong>site[collection.label]:</strong> <a href="{{ item.url }}">{{ item.title }}</a></li>
+        {% endfor %}
+    {% endif %}
+{% endfor %}
+</ul>
+
+Last 10 posts:
+<ul>
+{% for post in site.posts limit: 10 %}
     <li><a href="{{ post.url }}">{{ post.title }}</a></li>
 {% endfor %}
 </ul>
