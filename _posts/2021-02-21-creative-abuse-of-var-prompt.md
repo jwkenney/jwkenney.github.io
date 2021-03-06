@@ -11,7 +11,7 @@ This is part of a (maybe ongoing) series of dirty tips and tricks with Ansible. 
 
 ## Ansible's CLI wizard: vars_prompt
 
-If you use Tower/AWX and you want your non-techie users to pass arguments into your playbooks, then [Surveys](https://docs.ansible.com/ansible-tower/latest/html/userguide/job_templates.html#surveys) are the go-to option. For the rest of us plebs using command-line Ansible, we have [vars_prompt](https://docs.ansible.com/ansible/latest/user_guide/playbooks_prompts.html) to lean on. Simply put, **vars_prompt** gives you interactive "wizard-style" playbooks, by asking the user to fill in certain values when the playbook begins. Otherwise, a prompt variable behaves the same as any other that you would find in the  **vars:** section of a playbook.
+If you use Tower/AWX and you want your non-techie users to pass arguments into your playbooks, then [Surveys](https://docs.ansible.com/ansible-tower/latest/html/userguide/job_templates.html#surveys) are the go-to option. If you don't have Tower or AWX in your shop, then [vars_prompt](https://docs.ansible.com/ansible/latest/user_guide/playbooks_prompts.html) is the next best thing. Simply put, **vars_prompt** gives you interactive "wizard-style" playbooks, by asking the user to fill in certain values when the playbook begins. Otherwise, a prompt variable behaves the same as any other that you would find in the  **vars:** section of a playbook.
 
 {% raw %}
 ```yaml
@@ -37,7 +37,7 @@ If you use Tower/AWX and you want your non-techie users to pass arguments into y
 
 Above is the boring, "hello world" use-case for **vars_prompt**. But we can go deeper, and indeed we must- because Pat from Accounting just switched to a Developer role, and they are already requesting SSH access to our Ansible server. They also just asked us "What is a Linux?" _Fun_.
 
-There are some quirks and nuances to **vars_prompt**, which are not well-documented:
+There are some quirks to using **vars_prompt**, which are not well-documented:
 
 1.  You CANNOT use variables from **host_vars/** or **group_vars/** in a prompt entry, because those don't get pulled in until later in the play. However....
 2.  You CAN use [Special](https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html) variables in your prompt dialogs, as well as any variables defined locally in the **vars:** section of your playbook.

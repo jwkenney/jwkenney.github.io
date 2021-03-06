@@ -57,7 +57,7 @@ plugins:
 author:
   name   : "James Kenney"
   avatar : "/assets/images/bio-photo.jpg"
-  bio    : "Tech, Linux, DIY, and other stuff"
+  bio    : "Tech, Linux, DIY, other stuff"
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
