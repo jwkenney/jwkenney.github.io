@@ -75,6 +75,14 @@ footer:
       icon: "fab fa-linkedin"
       url: "https://www.linkedin.com/in/james-kenney-469643a2/"
 
+# Using utterances plugin, which uses Github issues to store comments
+# Also need comments: true set in the defaults section
+comments:
+  provider: "utterances"
+  utterances:
+    theme: "dark-blue"
+    issue_term: "pathname"
+
 defaults:
   # _posts
   - scope:
