@@ -55,9 +55,9 @@ plugins:
   - jekyll-include-cache
 
 author:
-  name   : "James Kenney"
-  avatar : "/assets/images/bio-photo.jpg"
-  bio    : "Tech, Linux, DIY, other stuff"
+  name: "James Kenney"
+  avatar: "/assets/images/bio-photo.jpg"
+  bio: "Tech, Linux, DIY, other stuff"
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
@@ -77,6 +77,7 @@ footer:
 
 # Using utterances plugin, which uses Github issues to store comments
 # Also need comments: true set in the defaults section
+repository: "jwkenney/jwkenney.github.io"
 comments:
   provider: "utterances"
   utterances:
