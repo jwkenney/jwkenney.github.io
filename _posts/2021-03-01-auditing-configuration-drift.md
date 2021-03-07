@@ -3,6 +3,7 @@ title: Using Ansible to audit configuration drift in a brownfield environment
 date: 2021-03-01
 categories:
   - Ansible
+  - Linux
 ---
 
 When adopting tool like Ansible for configuration management, one big challenge is that you are often starting in a [brownfield](https://en.wikipedia.org/wiki/Brownfield_(software_development)) environment- namely, one that is full of legacy systems and software which were deployed in an ad-hoc fashion. That means you will have a considerable amount of configuration drift to contend with.
@@ -115,7 +116,8 @@ tasks:
       prompt: "Diff reports are under {{ playbook_dir }}/diff_reports/. Press Enter to finish the playbook"
 ```
 {% endraw %}
-The above playbook comes with a companion template called **diff_report.j2** , stored next to the playbook. Below is the template:
+
+The above playbook comes with a companion template called **diff_report.j2** , stored next to the playbook. Below is the template:  
 {%raw%}
 ```jinja
 This host: {{ inventory_hostname }}
@@ -135,8 +137,7 @@ Packages on {{ refhost }} and {{ inventory_hostname }} that differ
 ```
 {%endraw%}
 
-The result is a set of report files generated per-host, which contain the differences between that host and your reference or "baseline" host.
-
+The result is a set of report files generated per-host, which contain the differences between that host and your reference or "baseline" host.  
 {%raw%}
 ```
 # diff_reports/report_host1.txt
@@ -167,6 +168,6 @@ Packages on host2 and host1 that differ:
 
 ## Step 3: Develop your Ansible roles and playbooks with the present drift in mind
 
-With a better idea of where the configuration drift is in your environment, you will have better insight into how you should design your roles and playbooks. Which configs and settings need custom per-host variables? Are there any "snowflake" builds that require special accommodations?
+With a better idea of where the configuration drift is in your environment, you will have more insight into how you should design your roles and playbooks. Which configs and settings need custom per-host variables? Are there any "snowflake" builds that require special accommodations?
 
 Generally, you don't want to add complexity to your roles until a situation requires it... but searching for those situations ahead of time, can save you a lot of grief and surprise refactoring work during your initial configuration rollout.
