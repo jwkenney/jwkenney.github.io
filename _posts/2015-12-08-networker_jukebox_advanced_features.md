@@ -1,0 +1,47 @@
+---
+title: Networker Jukebox Advanced Features- the fullest list
+date: 2015-12-08
+categories:
+  - Tech
+---
+
+If you are in the middle of deploying EMC's Networker backup suite, and you (still!) have to wrangle with a tape library, you may need to tune some "advanced features" depending on the model of jukebox. I could find no single place that listed all of the features- even the man pages omit most of the settings.  
+  
+I opened a support ticket to let EMC do the digging. Below is a summary of all advanced jukebox features as of Networker 8.2. Some options are deprecated, and you should avoid using them if possible. Unchecked options may not be supported by your jukebox, so operator beware. Some of the options should be toggled in pairs, such as any `_import` and `_export` features.
+  
+To tune these features, first enable Diagnostic Mode in your Networker Management Console (View > Diagnostic Mode). Then in the Devices section, right-click your jukebox, click Properties, and go to the Advanced tab. Tune at your own risk!
+
+*   `auto_allocate`: nsrlcpd mark resource as both hardware detected and software configured at configuration. This is for debugging modes only to allow configuring the whole library without having to pass lists of resources at startup.
+*   `auto_cc_unload` (NSRVAL_JBOPT_AUTO_CC_UNLOAD): Cleaning cartridge automatically unloaded. NOTE: This does not mean that the tape is automatically ejected, although NetWorker always assumes that cleaning tapes are automatically ejected after cleaning. See the NSRVAL_JBOPT_CCEJECT. The default is that the cleaning cartridge is automatically moved back to its slot.
+*   `auto_inventory`: This option enables automatic inventory invoked by the nsrlcpd. When the nsrlcpd detects that the library cap or door has been accessed, an alert is sent and an internal command to inventory the jukebox is generated. If changes in the jukebox are detected, resource information is passed up to the master controller.
+*   `autoeject` (NSRVAL_JBOPT_AUTOEJECT): Has autoeject feature. This means that the jukebox does not require an eject operation for move volumes out of drives. If Autoeject is not set in NetWorker but autoeject is supported by the library - an eject is essentially sent twice to the drive. If Autoeject is set in NetWorker, but not supported by the library - the volume will never be ejected for unload.
+*   `barcode` (NSRVAL_JBOPT_BARCODE): This means configuration wants or believes barcodes/voltags is supported.
+*   `cc_eject` (NSRVAL_JBOPT_CC_EJECT): Eject cleaning cartridge. NOTE: this must be set in conjunction with 'auto_cc_unload'. If 'cc_eject' is set, and 'auto_cc_unload' is _not_ set, NetWorker will eject the cleaning cartridge from the device. The default is cleaning catridges are automatically ejected.
+*   `cleaning_delay` (NSRVAL_JBOPT_CCDELAY): Set eject time after cleaning, which tells NetWorker how long it will take between cleaning the drive and ejecting the cleaning cartridge from the drive. Default is 60 seconds. If this option is not set (!cleaning_delay), then the default value is 60 seconds.
+*   `display` (NSRVAL_JBOPT_DISPLAY): Does the jukebox have a display that applications can use to post messages? This feature is currently not used by NetWorker.
+*   `doorlock` (NSRVAL_JBOPT_DOORLOCK): Does the jukebox have a lock on the front door that is accessible through SCSI? This is a feature that is not used by NetWorker.
+*   `eject_sleep` (NSRVAL_JBOPT_EJECTSLEEP): Use to set sleep time for eject operation. Default is 60 seconds. If this option is not set (!eject_sleep), then the default value is zero seconds.
+*   `element_status` (NSRVAL_JBOPT_ELTSTATUS): Jukebox has an initialize element status feature. This implies the jukebox has the ability to determine what is in the slots.
+*   `has_range` (NSRVAL_JBOPT_HAS_RANGE): Jukebox range initialization. Default is based on the jukebox. Sets the range for bar codes. See the jukebox User Guide for further details.
+*   `ies_no_barcode`: Disable barcode usage on libraries which report barcode, but reader is not working - set based on jukebox model.
+*   `init_inlet_rqd` (NSRVAL_JBOPT_INITINLET): Not used by NetWorker. See SCSI specs for additional information (initialize inlet required).
+*   `internal_ports`: Undefined
+*   `load_sleep` (NSRVAL_JBOPT_LOADSLEEP): Set pause time when loading cartridge. Default is 15 seconds. If this option is not set (!load_sleep), then the default value is 0 seconds. This delay was added for devices which return asynchronously from the load operation before the device is ready. If the return is asynchronous there may be errors in trying to access the device before it is ready. This delay was also added to give optical drives time to spin up.
+*   `multi_stack_import`: Undefined in their docs. My guess is that it involves tape libraries that have very large import / export slots (maybe there are multiple doors for import/export?). Probably associates with multi_stack_export as well.
+*   `multi_stack_export`: Undefined in their docs. My guess is that it involves tape libraries that have very large import / export slots (maybe there are multiple doors for import/export?). Probably associates with multi_stack_import as well.
+*   `need_align` (NSRVAL_JBOPT_NEED_ALIGN): This option is used by Adic VLS jukeboxes and others which may need aligning before moving media. The jukebox has a magazine separated from the devices in it by a partition. This partition contains a window. To load or unload volumes into a device, both the slot and device have to be aligned to the window prior to an eject or move media operation.
+*   `no_ies_range`: This option disables sending the initial element status by range. This option is specific to SCSI libraries. The nsrlcpd will attempt to use the command and automatically detect whether the library supports the command or not. However, this feature is available to disable using the efficent range version of the command and forces a full initialize element status when inventorying library resources.
+*   `no_init_elem_sts`: This option disables sending an initialize element status to a SCSI library or the equivalent initialization command for the other library types. It implies that the library either does not support an initialization command or that the library is configured to automatically inventory itself, so the command is redundant.
+*   `no_start_init_elem_sts`: Do not perform initialize element status on nsrlcpd startup.
+*   `no_trnsport_source_dest`: Library does not understand move commands with transport in format source/dest.
+*   `polled_export`: Undefined in their docs. Forum posts suggest that it allows Networker to quickly poll a library for changes if the library doors were opened, as opposed to doing a full Inventory scan. Typically disabled by default, but it's one of the first things people say to enable when tuning a jukebox. Usually enabled alongside `polled_import`.
+*   `polled_import`:  Undefined in their docs. Forum posts suggest that it allows Networker to quickly poll a library for changes if the library doors were opened, as opposed to doing a full Inventory scan. Usually disabled by default, but it's one of the first things people say to enable when tuning a jukebox. Usually enabled alongside `polled_export`.
+*   `read_elem_unload_fail`: This option determines whether we will  do an init element status on the source slot when we think an eject operation has failed (a tape is stuck in a drive.).
+*   `stacker_export`: Export port supports multiple cartridges, so inventory port during inventory and/or before a withdraw an occupied port does not mean the port cannot be used to export cartridges
+*   `stacker_import`: Import port supports multiple cartridges, so inventory port after deposit to see if another cartridge is accessible, cannot assume successful deposit and leave the port empty.
+*   `trust_compliant_jbox`: An umbrella option meant to signal nsrjb to trust various data available from SCSI jukeboxes. Currently the only effect of turning this on is that we will check the access bit of the data transfer element descriptor in order to decide whether we should try a move media before an eject during reset operations. The element descriptor is returned by SCSI jukeboxes in response to a read element status command.
+*   `two_sided` (NSRVAL_JBOPT_TWOSIDED): Two sided jukebox; slot numbers would have "a" or "b" postfixed
+*   `unload_sleep` (NSRVAL_JBOPT_UNLOADSLEEP): Set pause time when unloading the cartridge. Default is 60 seconds. If this option is not set (!unload_sleep), then the default value is 0 seconds. This delay was added for devices which return asynchronously from the unload operation before the operation is complete. The time delay is needed because nsrjb assumes that the operation has completed and may attempt another operation which may fail because the operation has not actually completed.
+*   `volume_tags` (NSRVAL_JBOPT_VOLTAGS): Volume tags are supported by the library. This is usually, but not limited to, tape barcode labels. Volume identification information may be obtained by reading MAM, or other means that may be vendor specific. This is an identifier that can be associated with a cartridge which can be set by an application. The ID is associated with the cartridge as long as it is in the jukebox, and lost upon withdrawal. NetWorker does not assign volume tags.
+
+One of the downsides to using a long-lived application like Networker!
