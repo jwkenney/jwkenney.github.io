@@ -82,6 +82,8 @@ comments:
   utterances:
     theme: "dark-blue"
     issue_term: "pathname"
+    repository: "jwkenney/jwkenney.github.io"
+    label: "documentation"
 
 defaults:
   # _posts
