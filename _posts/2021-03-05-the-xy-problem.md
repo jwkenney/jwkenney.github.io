@@ -19,23 +19,23 @@ The XY Problem, as originally explained [here](http://mywiki.wooledge.org/XyProb
 
 > The problem occurs when people get stuck on what they believe is the solution and are unable step back and explain the issue in full.
 
-When people call you for troubleshooting help, they often want to solve for Y- they are convinced that their solution will work, as long as a few details are addressed. Unfortunately, their solution may be a dead end, or it may be based on incorrect assumptions- but you won't know that until you understand the original problem. As the saying goes: Solve for X, before you solve for Y.
+When people call you for troubleshooting help, they are often convinced that their current solution will work, as long as a few lingering issues are addressed. Unfortunately, their solution may be a dead end, or it may be built on incorrect assumptions- but you won't know that until you understand their original problem. The customer wants to solve for Y, but you have to solve for X.
 
-When browsing Stackoverflow or some public support forum, you will occasionally see the magic question pop up in its purest form:
+When browsing Stackoverflow or vendor support forums, you will occasionally see someone ask the magic question:
 
 > What is the problem you are trying to solve?
 
-If asked up-front, this question can head off a *lot* of troubleshooting drama. It has some sharp edges that should be rounded off though, because it tends to make people defensive. Let's soften it with some verbal judo:
+This is the most direct way to ask: "What is the X behind your Y?" The above question has some sharp edges that should be rounded off though, because asking it directly tends to make people defensive. *What do you mean, 'What is the problem'? I just told you my problem!* Let's soften it with some verbal judo:
 
-> Can you help me understand what the original needs are behind this? If this were working, what is the outcome you would expect?
+> Can you help me understand what the original need is behind this? What goals are you trying to accomplish with what you have now?
 
 ## A real-world example
 
-For years, a customer had been using a screen-scraping program to harvest data from our website. We didn't have an API for this type of data, so the customer relied on a messy homebrew solution that was just functional enough to get what they needed. One day, a code change on our website caused their scripts to stop working- and the customer was stumped. In the name of customer service, our upper management stepped in and assured the customer that their scripting problem was now *our* problem too. Lovely.
+For years, a customer had been using a screen-scraping program to harvest data from our website. We didn't have an API for this type of data, so the customer relied on a messy homebrew solution that was just functional enough to get what they needed. One day, a code change on our website caused their scripts to stop working- and the customer was stumped. In the name of customer service, promises were made that we would support their homebrew screen-scraping method. *Oops*.
 
-The early focus was around fixing the customer's scripts. That is what the customer wanted after all, and the scripts had worked in the past. But after a month or so of stab-in-the-dark troubleshooting, the customer (and their management) were getting frustrated. *Why can't you solve the Y?*
+Due to that commitment, our early focus was around fixing the customer's scripts- but after a month or two of stab-in-the-dark troubleshooting, the customer was getting frustrated. *Why can't you solve our Y?*
 
-Eventually we were pulled into an all-hands discussion on the issue. That is when the magic question popped up: *What does the customer actually need from us?* What the customer didn't know, was that we have a team who regularly *pushes* the same data to customers who express a need for it. The service isn't advertised, but it is available if you know who to ask. When the customer came on the call, we started off with the magic question. The conversation went like this:
+Eventually we were pulled into an all-hands discussion on the issue. That is when the magic question popped up: *What does the customer actually need from us?* What the customer didn't know, was that we have a team who regularly *pushes* the same data to customers who express a need for it. When the customer came on the call, we started off with the magic question. The conversation went like this:
 
 > * **Customer**: So I figured out how to grab a new session token in my script, but I still get stuck at the next step...
 > * **Us**: What data are you trying to scrape? What do you need?
