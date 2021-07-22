@@ -70,9 +70,9 @@ Every new Ansible user has had at least one bad experience with **hosts: all**- 
 
   tasks:
 
-  - name: Dear god what have you just done
-    debug:
-      msg: "Time to nuke some servers LET'S GOOOOOOO!"
+    - name: Dear god what have you just done
+      debug:
+        msg: "Time to nuke some servers LET'S GOOOOOOO!"
 ```
 {%endraw%}
 
@@ -117,6 +117,93 @@ Time to nuke some servers LET'S GOOOOOOO!
 ```
 {% endraw %}
 
+### Prompt for info, act on it, then prompt for follow-up info
+
+Maybe you want to perform some kind of validation on earlier input, before prompting for more input- or else you need to gather a bunch of info before asking the user what to do about it.
+
+This starts to push the boundaries of *can-vs-should* territory with pure Ansible... but it can be done, if you break your prompts across multiple plays. The catch is that variables do not persist between plays, but host facts do- so any variables gathered in the first play, will need to be saved as server facts before the next play begins. A common hack is to save the variables to a dummy host's facts, or else use `localhost` (the Ansible server itself) as your variable piggybank.
+
+Below is an example in which we ask for a folder to search in the first play, and then prompt about its contents in the second. Note the use of `hostvars['localhost']['somevar']` to access the data in the second play:
+
+{% raw %}
+```yaml
+---
+
+# First play- gather some initial data, and validate input.
+- hosts: "{{ target }}"
+  connection: local
+  vars_prompt:
+
+    - name: target
+      prompt: "Please provide us a single host to work on"
+      private: no
+    
+    - name: folder_path
+      prompt: "Give us a path to your desired folder"
+      private: no
+  
+  tasks:
+
+    - name: Gather folder info and save to variable (should never fail)
+      shell:
+        cmd: "ls -1 {{ folder_path }} 2>/dev/null"
+      register: dir_result
+      failed_when: dir_result.rc > 1000
+
+    - name: Validate our data before continuing
+      assert:
+        that:
+          - ('foo' not in target)
+          - (dir_result.stdout != "")
+        fail_msg: |
+          Either you gave us an empty/unavailable folder, or the host has 'foo' in the name.
+          Take your dirty foo host somewhere else.
+        success_msg: Input validated, proceeding with next play...
+  
+  # Note that delegate_facts is essential, to avoid saving facts under the play host.
+  # Beware confusion between fact and var names, i.e. folder_path FACT vs folder_path VARIABLE.
+  - name: Save our variables to localhost facts, for next play
+    run_once: yes
+    delegate_to: localhost
+    delegate_facts: yes
+    set_fact:
+      dir_task: "{{ dir_result }}"
+      the_target: "{{ target }}"
+      folder_path: "{{ folder_path }}"
+
+
+# Second play- our previously-gathered vars are gone, but the facts remain.
+- hosts: "{{ hostvars['localhost']['the_target'] }}"
+  vars_prompt:
+
+    - name: activity
+      prompt: |
+        Showing contents of folder {{ hostvars['localhost']['folder_path'] }}... 
+        {{ hostvars['localhost']['dir_task']['stdout_lines'] | to_nice_yaml }}
+
+        Please enter a supported activity to perform, one of-
+          - nuke
+          - touch
+          - copy
+        Please provide your activity to perform now, or Enter for default
+      private: no
+      default: nuke
+  
+  tasks:
+
+    - name: Validate the activity
+      assert:
+        that:
+          - activity | regex_search("nuke|touch|copy")
+        fail_msg: "Invalid activity provided, specify one of- nuke, touch, copy"
+        success_msg: "Input looks good!"
+    
+    - name: Include task file to do the thing
+      include_tasks:
+        file: "tasks/{{ activity }}.yml"
+```
+{% endraw %}
+
 ###  Bonus: Set up bash aliases and profiles for easy playbook execution
 
 Maybe our new developer Pat isn't so good at this command-line stuff, and their question of "How do I Linux?" has you worried. Let's create a path of least resistance, so that all they need to do is type a simple word to kick off their playbook. We can do this with an old-fashioned combination of sudoers, bash aliases, and bash profiles.
@@ -157,7 +244,9 @@ Don't do anything we wouldn't do! Call us if you have any questions.
 [pat@rhel8 ~]# alias -p | grep dothething
 alias dothething='sudo /usr/bin/ansible -i /etc/ansible/inventory/pat_hosts /etc/ansible/playbooks/host_wiper.yml'
 
-[pat@rhel8 ~]# dothethingPlease provide a password:
+[pat@rhel8 ~]# dothething
+
+Please provide a password:
 
 Welcome to the server extermination playbook.
 Here are the hosts available to exterminate:
@@ -175,4 +264,4 @@ or hit Enter for default [dev]: host1,host2,prod
 ```
 {%endraw%}
 
-I think that's enough damage for now. While getting your hands dirty, try to keep your nose clean!
+I think that's enough damage for now. Try not to get your hands *too* dirty!
