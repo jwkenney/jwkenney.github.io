@@ -117,7 +117,7 @@ Time to nuke some servers LET'S GOOOOOOO!
 ```
 {% endraw %}
 
-### Prompt for info, act on it, then prompt for follow-up info
+## Prompt for info, act on it, then prompt for follow-up info
 
 Maybe you want to perform some kind of validation on earlier input, before prompting for more input- or else you need to gather a bunch of info before asking the user what to do about it.
 
@@ -204,7 +204,7 @@ Below is an example in which we ask for a folder to search in the first play, an
 ```
 {% endraw %}
 
-###  Bonus: Set up bash aliases and profiles for easy playbook execution
+##  Bonus: Set up bash aliases and profiles for easy playbook execution
 
 Maybe our new developer Pat isn't so good at this command-line stuff, and their question of "How do I Linux?" has you worried. Let's create a path of least resistance, so that all they need to do is type a simple word to kick off their playbook. We can do this with an old-fashioned combination of sudoers, bash aliases, and bash profiles.
 
