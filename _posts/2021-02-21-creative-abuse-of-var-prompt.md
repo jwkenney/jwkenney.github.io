@@ -11,7 +11,7 @@ This is part of a (maybe ongoing) series of dirty tips and tricks with Ansible. 
 
 ## Ansible's CLI wizard: vars_prompt
 
-If you use Tower/AWX and you want your non-techie users to pass arguments into your playbooks, then [Surveys](https://docs.ansible.com/ansible-tower/latest/html/userguide/job_templates.html#surveys) are the go-to option. If you don't have Tower or AWX in your shop, then [vars_prompt](https://docs.ansible.com/ansible/latest/user_guide/playbooks_prompts.html) is the next best thing. Simply put, **vars_prompt** gives you interactive "wizard-style" playbooks, by asking the user to fill in certain values when the playbook begins. Otherwise, a prompt variable behaves the same as any other that you would find in the  **vars:** section of a playbook.
+If you use Tower/AWX and you want your non-techie users to pass arguments into your playbooks, then [Surveys](https://docs.ansible.com/ansible-tower/latest/html/userguide/job_templates.html#surveys) are the go-to option. If you don't have Tower or AWX in your shop, then [vars_prompt](https://docs.ansible.com/ansible/latest/user_guide/playbooks_prompts.html) is the next best thing. Simply put, **vars_prompt** gives you interactive "wizard-style" playbooks, by asking the user to fill in certain values at the start of the play. Otherwise, a prompt variable behaves the same as any other that you would find in the  **vars:** section of a playbook.
 
 {% raw %}
 ```yaml
@@ -160,16 +160,16 @@ Below is an example in which we ask for a folder to search in the first play, an
           Take your dirty foo host somewhere else.
         success_msg: Input validated, proceeding with next play...
   
-  # Note that delegate_facts is essential, to avoid saving facts under the play host.
-  # Beware confusion between fact and var names, i.e. folder_path FACT vs folder_path VARIABLE.
-  - name: Save our variables to localhost facts, for next play
-    run_once: yes
-    delegate_to: localhost
-    delegate_facts: yes
-    set_fact:
-      dir_task: "{{ dir_result }}"
-      the_target: "{{ target }}"
-      folder_path: "{{ folder_path }}"
+    # Note that delegate_facts is essential, to avoid saving facts under the play host.
+    # Beware confusion between fact and var names, i.e. folder_path FACT vs folder_path VARIABLE.
+    - name: Save our variables to localhost facts, for next play
+      run_once: yes
+      delegate_to: localhost
+      delegate_facts: yes
+      set_fact:
+        dir_task: "{{ dir_result }}"
+        the_target: "{{ target }}"
+        folder_path: "{{ folder_path }}"
 
 
 # Second play- our previously-gathered vars are gone, but the facts remain.
