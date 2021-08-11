@@ -3,6 +3,7 @@ title: Medeawiz Sprite Deep-Dive for Holiday Decorations
 date: 2021-08-07
 tags:
   - DIY
+  - Holidays
 ---
 
 When preparing for the holidays, I'm a big fan of digital decorations- which use a projector and [special videos](https://atmosfx.com/) to "decorate" a surface, or create any number of special effects.
@@ -20,7 +21,7 @@ When looking for something more streamlined, I came across the [Medeawiz Sprite]
 The Sprite kit comes with the following:
 
 * The Sprite DV-S1, an IR remote, and power adapter
-* Old-school RCA cables for analog video
+* Old-school Composite cables for analog video
 * The Sprite has a 3.5mm I/O port, a 3.5mm Analog AV port, and an HDMI port.
 * An I/O adapter plug is included that converts to 4 screw terminals, for other serial/controller accessories
 * Some kits include a motion sensor, while others may include a push-button sensor.
@@ -39,9 +40,9 @@ I created some test videos named [000.quiet.mp4](/assets/files/000.quiet.mp4) an
 
 ## Usage
 
-This is the shortest section for a reason. Once your playback and output settings are dialed in, the device is truly plug-and-play. You copy your media to the root of a USB stick or memory card, insert the card into the Sprite, and the videos will begin playing automatically.
+This is the shortest section for a reason. Once your playback and output settings are dialed in, the device is truly plug-and-play. You copy your media to the root of a USB stick or memory card, insert the card into the Sprite, and the videos will begin playing automatically. To control the order the files are played in, just name them in alphabetical or numeric order.
 
-The device auto-plays when powered on as well, making setup in the field extremely easy. To control the order the files are played in, just name them in alphabetical or numeric order. It couldn't get any simpler!
+The device was designed so that non-technical people could keep it running in the field. It auto-plays your content when powered on. Forget the remote? Just remove and re-insert the power cord; the device will power on. I could have used this simplicity last Halloween, when a kid tripped on the power cord leading to my projection setup. I was in tech support purgatory for the next 10 minutes, while I rebooted my DIY media player and fumbled through menus to bring my singing pumpkins back to life. With this device, that situation would be a non-issue.
 
 ## Performance Summary and Deep Dive
 
@@ -114,4 +115,4 @@ Lastly, if you are looking to make actual edits to your videos, add/remove audio
 
 **Overall:**
 
-As someone who [isn't afraid to tinker]({% link _posts/2021-08-07-sprite-media-player-holiday-decorations.md %}) with a Raspberry Pi, I really appreciate how simple the Sprite is to use. The motion sensor opens up a ton of possibilities for interactive displays, and the support for multiple trigger videos will make decorations seem much more lively and less robotic.
+As someone who [isn't afraid to tinker]({% link _posts/2021-08-07-sprite-media-player-holiday-decorations.md %}) with DIY solutions, I really appreciate how simple the Sprite is to use. The motion sensor opens up many possibilities for interactive displays, and the support for multiple trigger videos really adds to the effect. Could you get decorations to play for cheaper? Sure, but not this easily and with motion sensing!
