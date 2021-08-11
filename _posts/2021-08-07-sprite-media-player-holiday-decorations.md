@@ -6,7 +6,7 @@ tags:
   - Holidays
 ---
 
-When preparing for the holidays, I'm a big fan of digital decorations- which use a projector and [special videos](https://atmosfx.com/) to "decorate" a surface, or create any number of special effects.
+When preparing for the holidays, I'm a big fan of digital decorations- which use a projector and [special videos](https://atmosfx.com/) to "decorate" a surface or create various special effects.
 
 One requirement is that you need something portable to play your videos with. Some projectors can play files directly from a memory stick, but the performance is often bad. Amazon is flooded with generic media player boxes, but the quality is all over the place. DIY solutions like the Raspberry Pi can work well, but they often require a certain amount of fussing to configure and use in the field.
 
@@ -115,4 +115,4 @@ Lastly, if you are looking to make actual edits to your videos, add/remove audio
 
 **Overall:**
 
-As someone who [isn't afraid to tinker]({% link _posts/2021-08-07-sprite-media-player-holiday-decorations.md %}) with DIY solutions, I really appreciate how simple the Sprite is to use. The motion sensor opens up many possibilities for interactive displays, and the support for multiple trigger videos really adds to the effect. Could you get decorations to play for cheaper? Sure, but not this easily and with motion sensing!
+As someone who [isn't afraid to tinker]({% link _posts/2021-08-07-sprite-media-player-holiday-decorations.md %}) with DIY solutions, I really appreciate how simple the Sprite is to use. The motion sensor is a killer feature that opens up many possibilities for interactive displays, and a recent update expanded those capabilities further. It isn't the cheapest option on the market, but it is probably the easiest to use for the features it provides!
