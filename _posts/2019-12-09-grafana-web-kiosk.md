@@ -1,9 +1,8 @@
 ---
 title: Using Grafana to make a web kiosk, with pictures from a network share or external site
 date: 2019-12-09
-categories:
-  - Grafana
 tags:
+  - Grafana
   - Dirty Tricks
 ---
 Maybe you have heard about Grafana's [playlist mode](https://grafana.com/docs/reference/playlist/), and you want to make your own web kiosk to show off your dashboards. You make a nice playlist that shows off your time-series metrics, and everyone is impressed with how high-tech their IT department feels.  

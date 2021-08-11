@@ -1,8 +1,9 @@
 ---
 title: Disable the seek bar popup (OSD) in Kodi / OpenELEC / LibreELEC
 date: 2020-10-31
-categories:
+tags:
   - Tech
+  - DIY
 ---
 Inspired by [this forum post](https://forum.kodi.tv/showthread.php?tid=356140&pid=2971509), and other fragmentary how-to's floating around the internet.  
 

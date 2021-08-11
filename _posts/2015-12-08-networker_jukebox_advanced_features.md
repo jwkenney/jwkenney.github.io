@@ -1,7 +1,7 @@
 ---
 title: Networker Jukebox Advanced Features- the fullest list
 date: 2015-12-08
-categories:
+tags:
   - Tech
 ---
 

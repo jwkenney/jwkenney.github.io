@@ -1,7 +1,7 @@
 ---
 title: Ansible job reports with Jinja + HTML
 date: 2021-05-01
-categories:
+tags:
   - Ansible
 ---
 
@@ -99,13 +99,13 @@ What are we accomplishing with the above?
 
 ## Reporting on server facts: json_query is your friend
 
-When printing out a set of facts across all hosts, the classic method is to loop through the `hostvars[]` hash and print values of interest, using filters like `selectattr` and `map`. However, this method is brittle in cases where data may be missing
+When printing out a set of facts across all hosts, the classic method is to loop through the `hostvars[]` hash and print values of interest, using filters like `selectattr` and `map`. However, this method is brittle in cases where data may be missing.
 
-Rather than add `| default()` filters everywhere, you can instead use the `json_query()` filter to collect host data of interest. It uses a search language called [JMESPath](https://jmespath.org/) for data lookups. The biggest benefit to `json_query`, is that it doesn't throw errors when data is missing- it simply returns an empty list. It also allows you to collect data across your entire `hostvars[]` hash in a single query.
+Rather than add `| default()` filters everywhere, you can instead use the `json_query()` filter to collect host data of interest. It uses a search language called [JMESPath](https://jmespath.org/) for data lookups. The biggest benefit to `json_query`, is that it doesn't throw errors when data is missing- it simply returns an empty list. It also allows you to collect a set of data across your entire `hostvars[]` hash and reformat it at the same time, all in a single query.
 
 The downside is that JMESPath has a tough learning curve. I highly recommend dumping your `hostvars[]` hash to a .json file using a template, and then installing a [JMESPath query extension](https://github.com/jmespath/jmespath.vscode) in your code editor of choice. Along with the JMESPath [tutorial site](https://jmespath.org/), this allows you experiment and hone in on the data you need.
 
-JMESPath queries are picky about quotes and escape characters, and it is easy for the queries to clobber with Ansible's Jinja templating engine. Most `json_query `users will sidestep this by putting the query itself in a temporary var:
+JMESPath queries are picky about quotes and escape characters, and it is easy for the queries to clobber with Ansible's Jinja templating engine. Most `json_query` users will sidestep this by putting the query itself in a temporary var:
 
 {% raw %}
 ```yaml

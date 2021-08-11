@@ -1,7 +1,7 @@
 ---
 title: Modular Interactive Kickstart Madness pt. 1
 date: 2015-02-23
-categories:
+tags:
   - Tech
   - Linux
 ---

@@ -1,10 +1,9 @@
 ---
 title: Cable Management for Home Wiring
 date: 2015-08-03
-categories:
-  - DIY
 tags:
   - Home Improvement
+  - DIY
 ---
 
 # Cable Management for Home Wiring

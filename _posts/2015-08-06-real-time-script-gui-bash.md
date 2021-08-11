@@ -1,7 +1,7 @@
 ---
 title: Real-time script control and GUI interfaces in bash
 date: 2015-08-06
-categories:
+tags:
   - Bash
 ---
 

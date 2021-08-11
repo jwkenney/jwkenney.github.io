@@ -1,9 +1,8 @@
 ---
 title: Creative abuse of vars_prompt, for user-friendly playbooks without Tower
 date: 2021-02-21
-categories:
-  - Ansible
 tags:
+  - Ansible
   - Dirty Tricks
 ---
 

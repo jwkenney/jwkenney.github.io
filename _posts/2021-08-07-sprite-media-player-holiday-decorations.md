@@ -1,7 +1,7 @@
 ---
 title: Medeawiz Sprite Deep-Dive for Holiday Decorations
 date: 2021-08-07
-categories:
+tags:
   - DIY
 ---
 
@@ -64,7 +64,7 @@ Some things I learned during testing:
 
 * The [online manual](http://medeawiz.com/Downloads.html) is very informative and helpful with troubleshooting. You should read through it once, to get familiar with the device and common troublehsooting steps.
 * Don't use bargain-bin USB sticks or memory cards. They *might* work, but they may also introduce lag or stuttering during playback.
-* The AtmosFX videos run at 1080p resolution and 30 frames per second, with a variable bitrate of 5-15Mbit/sec. The Sprite supports a max bitrate of 40-50Mbit/s for most file types, meaning it has plenty of horsepower to play AtmosFX decorations.
+* The Sprite has plenty of horsepower to play AtmosFX decorations. AtmosFX videos run at 1080p resolution and 30 frames per second, with a variable bitrate of 5-15Mbit/sec. The Sprite supports a max bitrate of 40-50Mbit/s for most file types.
 * If your projector does not support the default output mode of the Sprite (1080p/60Hz), you may need to hit the "HDMI" button on the remote to cycle though output modes until you find one that is usable.
 * If playing in trigger mode with a motion sensor, you can pick either "Trigger Low" or "Trigger High"- it doesn't matter. The distinction matters more for push-button or pressure-switch sensors, which distinguish between a button *press* (low) and a button *release* (high).
 * If you encounter problems during video playback, you may need to fine-tune the Video Output Mode on the Sprite for your display. I had to change my output mode to **HDMI_1080p_50Hz** to avoid a common issue mentioned in the manual (visual glitches on video transition).
@@ -98,7 +98,7 @@ Lastly, if you are looking to make actual edits to your videos, add/remove audio
 * 1080p decorations should play and transition seamlessly, as long as you find the right Video Output Mode.
 * The device is commercial-grade, and made to run constantly. It will probably hold up better than the white-label stuff from Amazon.
 * The UI is dirt-simple, and the Sprite is pure plug-and-play once configured. Load your videos onto a memory stick, power the device on, and away it goes!
-* Motion sensor / pressure switch support is a "killer feature" that sets the unit apart from the cheaper stuff.
+* Motion sensor / pressure switch support is a killer feature that sets the unit apart from the cheaper stuff.
 * For hardcore decorators, it supports serial control. [Team Kingsley](https://www.teamkingsley.com/) sells other accessories for the Sprite.
 
 **Cons:**
@@ -114,4 +114,4 @@ Lastly, if you are looking to make actual edits to your videos, add/remove audio
 
 **Overall:**
 
-As someone who [isn't afraid to tinker]({% link _posts/2021-08-07-sprite-media-player-holiday-decorations.md %}) with a Raspberry Pi, I really appreciate how simple the Sprite is to use.  The motion sensor opens up a ton of possibilities for interactive displays, and having multiple trigger videos lets your decoration have more interactive back-and-forth with the audience. 
+As someone who [isn't afraid to tinker]({% link _posts/2021-08-07-sprite-media-player-holiday-decorations.md %}) with a Raspberry Pi, I really appreciate how simple the Sprite is to use. The motion sensor opens up a ton of possibilities for interactive displays, and the support for multiple trigger videos will make decorations seem much more lively and less robotic.

@@ -1,7 +1,7 @@
 ---
 title: Configuring new network hardware in RHEL6 and RHEL7
 date: 2015-04-15
-categories:
+tags:
   - Linux
 ---
 

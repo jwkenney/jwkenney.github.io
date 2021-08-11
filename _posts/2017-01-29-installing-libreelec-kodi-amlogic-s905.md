@@ -1,7 +1,7 @@
 ---
 title: Installing OpenELEC/LibreELEC on the Amlogic S905 Chipset
 date: 2017-01-29
-categories:
+tags:
   - Tech
 ---
 

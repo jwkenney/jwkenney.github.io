@@ -1,7 +1,7 @@
 ---
 title: Using Ansible to audit configuration drift in a brownfield environment
 date: 2021-03-01
-categories:
+tags:
   - Ansible
   - Linux
 ---

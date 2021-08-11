@@ -1,7 +1,7 @@
 ---
 title: Tracking deployment and maintenance activity in time series
 date: 2021-03-12
-categories:
+tags:
   - Tech
   - Grafana
 ---

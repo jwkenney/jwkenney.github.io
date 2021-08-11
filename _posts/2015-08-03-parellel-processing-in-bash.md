@@ -1,9 +1,8 @@
 ---
 title: Parallel Processing in Bash
 date: 2015-08-03
-categories:
-  - Bash
 tags:
+  - Bash
   - Dirty Tricks
 ---
 
