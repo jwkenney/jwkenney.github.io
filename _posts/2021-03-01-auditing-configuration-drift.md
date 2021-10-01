@@ -45,32 +45,32 @@ Below was made with CentOS/Redhat in mind, but the pattern can be applied to any
 ---
 
 - name: Gather facts across hosts and compare to reference host
-hosts: all
-gather_facts: yes
+  hosts: all
+  gather_facts: yes
 
-vars_prompt:
-  - name: refhost
-    prompt: "Please type the hostname of your reference host, as seen in inventory"
-    private: no
+  vars_prompt:
+    - name: refhost
+      prompt: "Please type the hostname of your reference host, as seen in inventory"
+      private: no
 
-vars:
-  # List the full paths of the config files that we want to compare
-  my_configs:
-    - /etc/hosts
-    - /etc/ssh/sshd_config
+  vars:
+    # List the full paths of the config files that we want to compare
+    my_configs:
+      - /etc/hosts
+      - /etc/ssh/sshd_config
 
-pre_tasks:
+  pre_tasks:
 
-  - name: Make staging folders on Ansible server
-    delegate_to: localhost
-    run_once: yes
-    file:
-      state: directory
-      path: "{{ playbook_dir }}/{{ item }}"
-    loop:
-      - host_configs
-      - diff_files
-      - diff_reports
+    - name: Make staging folders on Ansible server
+      delegate_to: localhost
+      run_once: yes
+      file:
+        state: directory
+        path: "{{ playbook_dir }}/{{ item }}"
+      loop:
+        - host_configs
+        - diff_files
+        - diff_reports
 
 tasks:
 
