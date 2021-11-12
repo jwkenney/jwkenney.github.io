@@ -11,7 +11,7 @@ When you run the `ansible` or `ansible-playbook` command, it will return an exit
 
 The ansible command exit codes are not documented at all- and to make matters worse, the same exit code can mean different things depending on the type of failure and how it occurred.
 
-[This Github issue](https://github.com/ansible/ansible/issues/19720) tracks some of the discussion and debate around what the exit codes mean. The behavior is uncertain enough, that developers are refraining from documenting exit codes anywhere. Ironically, the current sentiment among developers is that: *The exit behavior can be obscure or inconsistent, and we don't currently document it anywhere... so trying to figure it out is a low priority for now. Do your own testing to figure out what the exit codes mean for you.* Alrighty then...
+[This Github issue](https://github.com/ansible/ansible/issues/19720) tracks some of the discussion around what the exit codes mean. The behavior is uncertain enough, that developers have refrained from documenting the exit codes anywhere- leading to even more confusion. Their current recommendation is to do your own testing to determine the behavior. Alrighty then...
 
 ## TQM, ansible, ansible-playbook... huh?
 
@@ -26,9 +26,9 @@ RUN_FAILED_BREAK_PLAY = 8
 RUN_UNKNOWN_ERROR = 255
 ```
 
-However, it isn't a one-to-one relationship- only some of TQM's return codes bubble up to the parent ansible commands, and only if TQM is the component that encounters the error. Return codes `2` and `4` seem to be the most "overloaded", meaning different things depending on which component encounters an issue.
+However, these return codes are not gospel. Only some of TQM's return codes bubble up to the parent ansible commands, and then only if TQM is the component that encounters the error. Return codes `2` and `4` seem to be the most overloaded, with different components using them to mean different things.
 
-Using a combination of old docs, source code scrutiny, and simulating failures with a playbook on Ansible v2.9, below is my best effort at listing what the various exit codes may mean:
+Using a combination of old docs, source code scrutiny, github issue threads, and simulated failures with a playbook on Ansible v2.9, below is my best effort at listing what the various exit codes may mean:
 
 * `0` = The playbook ran successfully, without any task failures or internal errors.
 * `1` = There was a fatal error or exception during execution of the playbook.
