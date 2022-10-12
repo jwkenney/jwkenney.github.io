@@ -26,27 +26,37 @@ RUN_FAILED_BREAK_PLAY = 8
 RUN_UNKNOWN_ERROR = 255
 ```
 
-However, this isn't the only source of possible error codes. In practice, return codes `2` and `4` seem to be the most overloaded, representing different issues depending on the component that encountered an error.
+However, this isn't the only source of possible error codes. In practice, return codes `2` and `4` are overloaded with possible meanings, depending on the work being performed.
 
-Using a combination of old docs, source code scrutiny, github issue threads, and simulated failures with a playbook on Ansible v2.9, below is my best effort at listing what the various exit codes may mean:
+Below is a best-effort at explaining the various exit codes in real terms, via testing with Ansible 2.9 and squinting at the source code:
 
-* `0` = The playbook ran successfully, without any task failures or internal errors.
-* `1` = There was a fatal error or exception during execution of the playbook.
+* `0` = The command ran successfully, without any task failures or internal errors.
+* `1` = There was a fatal error or exception during execution.
 * `2` = Can mean any of:
    * Task failures were encountered on some or all hosts during a play (partial failure / partial success).
    * The user aborted the playbook by hitting `Ctrl+C, A` during a `pause` task with `prompt`.
-   * Invalid arguments were passed to the command, i.e. `ansible-playbook --this-arg-doesnt-exist some_playbook.yml`.
+   * Invalid or unexpected arguments, i.e. `ansible-playbook --this-arg-doesnt-exist some_playbook.yml`.
    * A syntax / YAML parsing error was encountered during a *dynamic* include, i.e. `include_role` or `include_task`. Basically treated like any other task failure encountered on some or all hosts.
-*  `3` = This used to mean "Hosts unreachable", but it seems to have been redefined to `4`. I'm not sure if this means anything different now.
+*  `3` = This used to mean "Hosts unreachable" per TQM, but that seems to have been redefined to `4`. I'm not sure if this means anything different now. (ref1,ref4)
 * `4` = Can mean any of:
-   * *Some hosts* were unreachable during the run- either from login failures, or a lack of connectivity. *This will NOT end the run early.*
-   * *All of the hosts within a single batch* were unreachable- i.e. if you set `serial: 3` at the play level, and three hosts in a batch were unreachable. *This WILL end the run early.*
-   * A synax or YAML parser error was encountered in the playbook, or within a *static* include (`import_role` or `import_task`). *This is a fatal error.*
-* `8` = This may just be an error within Task Queue Manager, and it may or may not bubble up to the `ansible` or `ansible-playbook` command. TQM calls it "RUN_FAILED_BREAK_PLAY".
-* `99` = Ansible received a user interrupt (SIGINT) while running the playbook- i.e. the user hits `Ctrl+c` during the playbook run.
+   * Some hosts were unreachable during the run (login errors, host unavailable, etc). *This will NOT end the run early.* (ref4)
+   * All of the hosts within a single batch were unreachable- i.e. if you set `serial: 3` at the play level, and three hosts in a batch were unreachable. *This WILL end the run early.*
+   * A synax or parsing error was encountered- either in command arguments, within a playbook, or within a *static* include (`import_role` or `import_task`). *This is a fatal error.* (ref1)
+* `5` = Error with the options provided to the command (ref3)
+* `6` = Command line args are not UTF-8 encoded (ref1)
+* `8` = A condition called RUN_FAILED_BREAK_PLAY occurred within Task Queue Manager. (ref4)
+* `99` = Ansible received a keyboard interrupt (SIGINT) while running the playbook- i.e. the user hits `Ctrl+c` during the playbook run.
 * `143` = Ansible received a kill signal (SIGKILL) during the playbook run- i.e. an outside process kills the `ansible-playbook` command.
-* `250` = Unexpected error
+* `250` = Unexpected exception- often due to a bug in a module, jinja templating errors, etc.
 * `255` = Unknown error
+
+References:
+
+* [ref1](https://github.com/ansible/ansible/blob/devel/lib/ansible/cli/__init__.py) (search for `exit_code`)
+* [ref2](https://github.com/ansible/ansible/blob/devel/lib/ansible/playbook/__init__.py)
+* [ref3](https://github.com/ansible/ansible/blob/devel/lib/ansible/cli/adhoc.py)
+* [ref4](https://github.com/ansible/ansible/blob/devel/lib/ansible/executor/task_queue_manager.py)
+
 
 ## Summary
 
