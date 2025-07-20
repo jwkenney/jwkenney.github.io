@@ -6,7 +6,7 @@ tags:
   - Linux
 ---
 
-When adopting tool like Ansible for configuration management, one big challenge is that you are often starting in a [brownfield](https://en.wikipedia.org/wiki/Brownfield_(software_development)) environment- namely, one that is full of legacy systems and software which were deployed in an ad-hoc fashion. That means you will have a considerable amount of configuration drift to contend with.
+When adopting tool like Ansible for configuration management, one big challenge is that you are often starting in a [brownfield](https://en.wikipedia.org/wiki/Brownfield_(software_development)) environment- one that is already established, and likely full of configuration quirks between systems.
 
 This can cause a lot of heartburn and uncertainty, if you plan on using Ansible to harmonize the configuration of your legacy systems. Your first push to correct configuration drift will create a _lot_ of changes, and it will be difficult to distinguish between the critical stuff and the noise. There are no perfect answers... but we can reduce some of that uncertainty, using Ansible to perform the gruntwork.
 

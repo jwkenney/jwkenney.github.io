@@ -5,24 +5,13 @@ tags:
   - Grafana
   - Dirty Tricks
 ---
-Maybe you have heard about Grafana's [playlist mode](https://grafana.com/docs/reference/playlist/), and you want to make your own web kiosk to show off your dashboards. You make a nice playlist that shows off your time-series metrics, and everyone is impressed with how high-tech their IT department feels.  
-  
-Bob the Director and Suzie from accounting see this, and immediately ask you about showing their quarterly earnings reports and potluck announcements alongside your real-time performance graphs. Your stomach churns at the thought of becoming the "communications director" for the entire department. Anything you provide should be simple and self-service, if possible.
-  
-**Solution:** Make a Grafana playlist with a mix of static pictures and dynamic dashboards, and source your pictures from a network share or internal site. Bob and Suzie can update the kiosk by simply dropping files into a network share, or publishing new pictures to their CMS. As long as the picture names or URLs stay consistent, the Grafana dashboards will display them properly. There are a number of ways to do this, depending on how you want to source the images.
+Grafana has a [playlist mode](https://grafana.com/docs/reference/playlist/) that lets you rotate through a series of dashboards. We set up a screen in our IT department, to show live stats for our web traffic and API calls per day, etc.
 
-## Requirements
-
-This guide is written assuming that you have:
-
-*   A Linux-based Grafana server, version 6.X or above. I will make a best-guess at what is needed for a Windows server.
-*   A network storage appliance that both your users and the Grafana server can access. Otherwise, a Content Management System (CMS) or image hosting site that is accessible to your Grafana server.
-*   Some intermediate Sysadmin and Grafana knowledge
-*   Knowledge of the appropriate security for hosting images / making them accessible.
+This drew interest from others in management, who wanted a simple way to sprinkle in their own announcements and pictures in with the graphs. Some would publish their info to a website, while others would save their media to a network share. 
 
 ## Step 1: Pick a network share or website to host your images from
 
-You can host your pictures from a network share, or any web-based CMS that provides predictable URLs for any images uploaded. We will assume you want to host them on a local network share.
+You can host your pictures on any site that the Grafana server can reach. The more interesting case is pulling them from a network share, if you want Grafana to serve out the info directly.
 
 Create a new folder or share on your Network Storage, that is accessible to both your Grafana server and the people you want updating the content. Ensure that user permissions are appropriate for your situation. In this example, we will use a Windows (SMB) share with the folder path:
   
@@ -147,15 +136,15 @@ For images from a network share, paste in the *local, relative file path* of you
   
 {% raw %}
 ```
-<img src=/public/img/kiosk/IMAGE01.JPG?$__to alt="File is missing! Ensure filename is correct in share location.">
+<img src=/public/img/kiosk/IMAGE01.JPG?$__to alt="Nothing here yet, stay tuned for other announcements!">
 ```
 {% endraw %}
   
-If the image is hosted on an external site or CMS, provide the full http:// URL of the image instead.  
+If the image is hosted on an external site, provide the full URL of the image instead.  
   
 {% raw %}
 ```
-<img src=**https://sitename.company.com/public/images/IMAGE01.JPG?$__to alt="File is missing! Ensure filename is correct in share location.">
+<img src=**https://sitename.company.com/public/images/IMAGE01.JPG?$__to alt="Nothing here yet, stay tuned for other announcements!">
 ```
 {% endraw %}
 
@@ -165,7 +154,7 @@ Some important notes on the URL:
 *   Grafana's internal webserver supports most standard image formats: JPG, PNG, SVG, etc.
 *   Filenames and URLs are case-sensitive! You will have to train your users to watch out for this, sorry.    
 
-4\. You should see your picture appear in the panel as soon as you provide a valid path. Edit your dashboard settings, and under the General tab > Tags, add a tag named "kiosk"- this will come in handy later. Save your dashboard.  
+4\. You should see the picture appear in the panel as soon as you provide a valid path. Edit your dashboard settings, and under the General tab > Tags, add a tag named "kiosk"- this will come in handy later. Save your dashboard.  
   
 Rinse and repeat, adding new image panels and/or dashboards as-needed.  
 
