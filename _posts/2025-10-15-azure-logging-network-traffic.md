@@ -27,6 +27,7 @@ The [Traffic analytics schema docs](https://learn.microsoft.com/en-us/azure/netw
 
 **Count total inbound/outbound external traffic for time range:**
 {% raw %}
+```kusto
 // Summarize total public/external traffic for time range (inbound and outbound flows)
 NTANetAnalytics
 | where SubType == "FlowLog"
@@ -40,12 +41,14 @@ NTANetAnalytics
 | summarize TotalBytes = sum(IncomingBytes+OutgoingBytes) by FlowDirection
 | project FlowDirection, TotalTraffic = format_bytes(TotalBytes,1) // Optional: convert to human-readable string for MB, GB, etc.
 | render table
+```
 {% endraw %}
 
 Result:
 
 **Plot total inbound/outbound traffic to public internet from Azure**
 {% raw %}
+```kusto
 // Total inbound+outbound public internet traffic in MB per collection interval.
 // Traffic analytics schema: https://learn.microsoft.com/en-us/azure/network-watcher/traffic-analytics-schema?tabs=vnet#traffic-analytics-schema
 let Interval = 10m; // Align this with your chosen collection interval when configuring Network Analytics
@@ -59,4 +62,5 @@ NTANetAnalytics
   IncomingBytes = iif((FlowDirection == "Inbound"), BytesSrcToDest, BytesDestToSrc),
   OutgoingBytes = iif((FlowDirection == "Inbound"), BytesDestToSrc, BytesSrcToDest)
 | summarize Incoming_MB=(sum(IncomingBytes)/1000000), Outgoing_MB=(sum(OutgoingBytes)/1000000) by bin(TimeGenerated, Interval)
+```
 {% endraw %}
