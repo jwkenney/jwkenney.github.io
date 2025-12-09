@@ -40,7 +40,7 @@ Give the foam ~10-15 minutes to dry, then add a thin coat of grey or black spray
 
 ![2025-07-20-burning-bones-3.jpg](/assets/images/2025-07-20-burning-bones-3.jpg){:class="img-responsive"}
 
-Continue adding layers of foam + lights + sticks, bones etc. until you run out.
+Continue adding layers of foam, lights, sticks, bones etc. until you run out.
 
 ![2025-07-20-burning-bones-4.jpg](/assets/images/2025-07-20-burning-bones-4.jpg){:class="img-responsive"}
 
