@@ -6,9 +6,9 @@ tags:
   - Grafana
 ---
 
-We use a popular time-series stack (Telegraf / InfluxDB / Grafana) to collect and visualize performance data across our infrastructure. When we began collecting system stats, an early blind spot emerged: we did not have a simple way to associate developer activity with system performance.
+We use a variety of tools to collect and visualize data about our infrastructure: Telegraf for data collection, InfluxDB for metrics storage, and Grafana for visualization.
 
-The problem with infrastructure performance data, is that it only shows you the *effects* of application activity- leaving you to speculate about the causes. In an effort to help narrow this visibility gap, we devised an elegant way to plot deployment history alongside our system performance graphs.
+This has been handy for diagnosing peformance bottlenecks within the infrastructure, but it also revealed a painful limitation: infrastructure data can only show the *effects* of misbehaving applications, without much insight into the causes. At the time, we didn't have the same degree of observability into our applications. (Side note: this had the perverse effect of encouraging app teams to scrutinize the *infrastructure* performance first, every time an application misbehaved. Thank you, [streetlight effect](https://en.wikipedia.org/wiki/Streetlight_effect)!). We began looking for ways to correlate it with application activity.
 
 One of the nice things about the InfluxDB time-series database, is that there are [many ways](https://docs.influxdata.com/influxdb/v2.0/write-data/developer-tools/) to feed data into it- including a [web API](https://docs.influxdata.com/influxdb/v2.0/write-data/developer-tools/api/). This means you can push your own metrics into it directly, using a simple `curl` statement:
 
@@ -22,23 +22,21 @@ deployments,host=host1,environment=test activity="deployment-app1-1.2.34",status
 ```
 {% endraw %}
 
-There are examples online for doing the same with python, powershell, etc.
+The most common cause of a misbehaving applications, were bugs introduced by an update. We created a script that sent deployment status metrics tagged by host, environment, application, activity, and status. We worked with development teams to add this script to the end of their CI/CD pipelines and deployment playbooks.
 
-We created a deployment status script that accepts basic arguments for the host, environment, application, activity, and status. We worked with development teams to add this script to the end of their CI/CD pipelines and deployment playbooks.
-
-The result is a record of deployment activity that we can plot alongside a system's performance graphs in Grafana.
+The result was a record of deployment activity that we could plot alongside a system's performance graphs in Grafana.
 
 ![2021-03-12-grafana-2.png](/assets/images/2021-03-12-grafana-2.png)
 
 ## Making the deployment data useful
 
-Data tables are a start, but they aren't very useful on their own. How about combining them with our performance graphs?
+Now that the data was in the same TSDB, we could then overlay it on our existing grafana graphs.
 
 ![2021-03-12-grafana-1.png](/assets/images/2021-03-12-grafana-1.png)
 
 The blue and green vertical bars are deployments that ran against this host, and the moving line represents database connections opened by applications on the server.
 
-Notice anything odd about the graph? Immediately after the "blue" deployment on the right, the database connections shot to 100 and stayed there. In this case, some manual configuration changes were made to troubleshoot connectivity issues on the host... but the developer forgot to add those changes back into their code. As a result, the next deployment bulldozed their manual config changes, and the connection issues reappeared.
+Notice that immediately after the "blue" deployment on the right, the database connections shot to 100 and stayed there. In this case, some manual configuration changes were made to troubleshoot connectivity issues on the host... but the developer forgot to roll the changes back into their code. As a result, the next deployment bulldozed their manual config changes, and the connection issues reappeared.
 
 This kind of overlay technique has been very useful in flushing out mysterious bugs, configuration drift, etc. With just a little bit of scripting knowledge, you can apply the same layer of visibility to other processes as well:
 
