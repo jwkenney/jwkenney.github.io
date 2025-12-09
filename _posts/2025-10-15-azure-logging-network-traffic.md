@@ -1,11 +1,9 @@
 ---
 title: Logging Internet traffic with Azure
-date: 2025-07-20
+date: 2025-10-15
 tags:
   - Azure
 ---
-
-# Logging Azure In
 
 For monitoring network traffic within Azure, Microsoft provides a [Traffic Analytics](https://portal.azure.com/#view/Microsoft_Azure_Network/NetworkWatcherMenuBlade/~/trafficAnalytics) framework that allows you to capture aggregated logs of the network flows between your Virtual Networks (vNets) and/or Network Security Groups (NSGs). Like many things Azure, some assembly is required.
 
