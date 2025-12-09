@@ -40,7 +40,7 @@ NTANetAnalytics
 | summarize TotalBytes = sum(IncomingBytes+OutgoingBytes) by FlowDirection
 | project FlowDirection, TotalTraffic = format_bytes(TotalBytes,1) // Optional: convert to human-readable string for MB, GB, etc.
 | render table
-{ % endraw %}
+{% endraw %}
 
 Result:
 
@@ -59,4 +59,4 @@ NTANetAnalytics
   IncomingBytes = iif((FlowDirection == "Inbound"), BytesSrcToDest, BytesDestToSrc),
   OutgoingBytes = iif((FlowDirection == "Inbound"), BytesDestToSrc, BytesSrcToDest)
 | summarize Incoming_MB=(sum(IncomingBytes)/1000000), Outgoing_MB=(sum(OutgoingBytes)/1000000) by bin(TimeGenerated, Interval)
-{ % endraw %}
+{% endraw %}
